@@ -1,0 +1,32 @@
+version: 1
+metadata:
+  name: Expression Policy - Create name Context Attribute From first_name and last_name Context Attributes
+context: {}
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies_expression.expressionpolicy
+  id: create-name-context-attribute-from-first_name-and-last_name-context-attributes-expression-policy
+  identifiers:
+    name: create-name-context-attribute-from-first_name-and-last_name-context-attributes-expression-policy
+  attrs:
+    expression:  |
+      result = ak_call_policy(
+          "validate-first_name-and-last_name-context-attributes-expression-policy",
+      )
+
+      if result.passing:
+        first_name = request.context["prompt_data"]["first_name"]
+        last_name = request.context["prompt_data"]["last_name"]
+
+        request.context["prompt_data"]["name"] = f"{first_name} {last_name}"
+        return True
+
+      return False
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

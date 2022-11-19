@@ -1,0 +1,77 @@
+version: 1
+metadata:
+  name: Flow - Default Authentication
+context:
+  name: Welcome to authentik!
+  title: Welcome to authentik!
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Stage - Inbuilt Backend Password With default-password-change Flow
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Stage - Default User Login
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Flow - Default Enrollment
+    required: false
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flow
+  id: flow
+  identifiers:
+    slug: default-authentication-flow
+  attrs:
+    designation: authentication
+    name: !Context name
+    title: !Context title
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_identification.identificationstage
+  id: default-authentication-identification-stage
+  identifiers:
+    name: default-authentication-identification-stage
+  attrs:
+    user_fields:
+    - email
+    - username
+    show_matched_user: false
+    password_stage: !Find [authentik_stages_password.passwordstage, [name, inbuilt-backend-password-with-default-password-change-flow-password-stage]]
+    enrollment_flow: !Find [authentik_flows.flow, [slug, default-enrollment-flow]]
+
+# - model: authentik_stages_authenticator_validate.authenticatorvalidatestage
+#   id: default-authentication-mfa-validation
+#   identifiers:
+#     name: default-authentication-mfa-validation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-authentication-identification-stage
+    target: !KeyOf flow
+  attrs:
+    order: 0
+
+# - model: authentik_flows.flowstagebinding
+#   identifiers:
+#     order: 30
+#     stage: !KeyOf default-authentication-mfa-validation
+#     target: !KeyOf flow
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !Find [authentik_stages_user_login.userloginstage, [name, default-user-login-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 900
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

@@ -1,0 +1,225 @@
+version: 1
+metadata:
+  name: Flow - Default Enrollment
+context:
+  name: Welcome to authentik!
+  title: Welcome to authentik!
+  email_confirmation_sender: system@authentik.local
+  email_confirmation_subject: authentik
+  email_confirmation_template: email/account_confirmation.html
+  invitation_token_field_label: Invitaiton ID
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Prompt - First and Last Name Fields
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate first_name and last_name Context Attributes
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Create name Context Attribute From first_name and last_name Context Attributes
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Prompt - Username With Duplicate Check Field
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Prompt - Password and Password Repeat Fields
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Prompt - Email Field
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate email Context Attribute Is Unique
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Stage - Default User Login
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Stage - User Write With Automatic Add To Group on Creation
+    required: true
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies_expression.expressionpolicy
+  id: default-enrollment-validate-token-expression-policy
+  identifiers:
+    name: default-enrollment-validate-token-expression-policy
+  attrs:
+    expression:  |
+      from uuid import UUID
+
+      token = request.context.get("prompt_data", {}).get("token", "")
+      try:
+          if UUID(token).version == 4:
+              return True
+      except ValueError:
+          pass
+
+      ak_message('"' + str(token) + '"' + " is not a valid.")
+      return False
+
+- model: authentik_policies_expression.expressionpolicy
+  id: default-enrollment-validate-invitation-is-in-effect-expression-policy
+  identifiers:
+    name: default-enrollment-validate-invitation-is-in-effect-expression-policy
+  attrs:
+    expression: return request.context.get("invitation_in_effect", False)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flow
+  id: flow
+  identifiers:
+    slug: default-enrollment-flow
+  attrs:
+    designation: enrollment
+    name: !Context name
+    title: !Context title
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_prompt.prompt
+  id: default-enrollment-invitation-token-prompt
+  identifiers:
+    field_key: token
+  attrs:
+    order: 0
+    label: !Context invitation_token_field_label
+    placeholder: !Context invitation_token_field_label
+    placeholder_expression: false
+    required: true
+    type: text
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_invitation.invitationstage
+  id: default-enrollment-allow-no-invitation-invitation-stage
+  identifiers:
+    name: default-enrollment-allow-no-invitation-invitation-stage
+  attrs:
+    continue_flow_without_invitation: true
+
+- model: authentik_stages_prompt.promptstage
+  id: default-enrollment-invitation-token-prompt-stage
+  identifiers:
+    name: default-enrollment-invitation-token-prompt-stage
+  attrs:
+    fields:
+    - !KeyOf default-enrollment-invitation-token-prompt
+    validation_policies:
+    - !KeyOf default-enrollment-validate-token-expression-policy
+
+- model: authentik_stages_invitation.invitationstage
+  id: default-enrollment-deny-without-invitation-invitation-stage
+  identifiers:
+    name: default-enrollment-deny-without-invitation-invitation-stage
+  attrs:
+    continue_flow_without_invitation: false
+
+- model: authentik_stages_email.emailstage
+  id: default-enrollment-confirm-email-email-stage
+  identifiers:
+    name: default-enrollment-confirm-email-email-stage
+  attrs:
+    subject: !Context email_confirmation_subject
+    template: !Context email_confirmation_template
+    use_global_settings: true
+    activate_user_on_success: true
+
+- model: authentik_stages_prompt.promptstage
+  id: default-enrollment-user-info-prompt-stage
+  identifiers:
+    name: default-enrollment-user-info-prompt-stage
+  attrs:
+    fields:
+    - !Find [authentik_stages_prompt.prompt, [field_key, first_name]]
+    - !Find [authentik_stages_prompt.prompt, [field_key, last_name]]
+    - !Find [authentik_stages_prompt.prompt, [field_key, email]]
+    - !Find [authentik_stages_prompt.prompt, [field_key, username], [type, username]]
+    - !Find [authentik_stages_prompt.prompt, [field_key, password]]
+    - !Find [authentik_stages_prompt.prompt, [field_key, password_repeat]]
+    validation_policies:
+    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-first_name-and-last_name-context-attributes-expression-policy]]
+    - !Find [authentik_policies_expression.expressionpolicy, [name, create-name-context-attribute-from-first_name-and-last_name-context-attributes-expression-policy]]
+    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-unique-expression-policy]]
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-enrollment-allow-no-invitation-invitation-stage
+    target: !KeyOf flow
+  attrs:
+    order: 0
+
+- model: authentik_flows.flowstagebinding
+  id: default-enrollment-invitation-token-prompt-stage-binding
+  identifiers:
+    stage: !KeyOf default-enrollment-invitation-token-prompt-stage
+    target: !KeyOf flow
+  attrs:
+    order: 100
+    re_evaluate_policies: true
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-enrollment-deny-without-invitation-invitation-stage
+    target: !KeyOf flow
+  attrs:
+    order: 200
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-enrollment-user-info-prompt-stage
+    target: !KeyOf flow
+  attrs:
+    order: 300
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !Find [authentik_stages_user_write.userwritestage, [name, user-write-with-automatic-add-to-group-on-creation-user-write-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 400
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-enrollment-confirm-email-email-stage
+    target: !KeyOf flow
+  attrs:
+    order: 500
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !Find [authentik_stages_user_login.userloginstage, [name, default-user-login-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 900
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies.policybinding
+  identifiers:
+    policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy
+    target: !KeyOf default-enrollment-invitation-token-prompt-stage-binding
+  attrs:
+    order: 0
+    enabled: true
+    negate: true
+    timeout: 30
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

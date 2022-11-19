@@ -1,0 +1,47 @@
+version: 1
+metadata:
+  name: Prompt - First and Last Name Fields
+context:
+  first_name_field_order: 0
+  last_name_field_order: 1
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_prompt.prompt
+  id: first-name-field-prompt
+  identifiers:
+    field_key: first_name
+    label: First name
+  attrs:
+    order: !Context first_name_field_order
+    placeholder: |
+      try:
+          return user.name.split(" ")[0]
+      except:
+          return 'First name'
+    placeholder_expression: true
+    required: true
+    type: text
+
+- model: authentik_stages_prompt.prompt
+  id: last-name-field-prompt
+  identifiers:
+    field_key: last_name
+    label: Last name
+  attrs:
+    order: !Context last_name_field_order
+    placeholder: |
+      try:
+          return user.name.split(" ")[-1]
+      except:
+          return 'Last name'
+    placeholder_expression: true
+    required: true
+    type: text
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

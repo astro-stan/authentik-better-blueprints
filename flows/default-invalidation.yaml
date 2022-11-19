@@ -1,0 +1,60 @@
+version: 1
+metadata:
+  name: Flow - Default Invalidation
+context:
+  name: Logout
+  title: Logout
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flow
+  id: flow
+  identifiers:
+    slug: default-invalidation-flow
+  attrs:
+    designation: invalidation
+    name: !Context name
+    title: !Context title
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_prompt.prompt
+  id: default-invalidation-logout-dummy-prompt
+  identifiers:
+    field_key: logout-dummy
+    label: Are you sure you want to logout?
+  attrs:
+    order: 0
+    placeholder: Are you sure you want to logout?
+    placeholder_expression: false
+    required: false
+    type: static
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_prompt.promptstage
+  id: default-invalidation-logout-dummy-prompt-stage
+  identifiers:
+    name: default-invalidation-logout-dummy-prompt-stage
+  attrs:
+    fields:
+    - !KeyOf default-invalidation-logout-dummy-prompt
+
+- model: authentik_stages_user_logout.userlogoutstage
+  id: default-invalidation-logout-stage
+  identifiers:
+    name: default-invalidation-logout-stage
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-invalidation-logout-dummy-prompt-stage
+    target: !KeyOf flow
+  attrs:
+    order: 0
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-invalidation-logout-stage
+    target: !KeyOf flow
+  attrs:
+    order: 900
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

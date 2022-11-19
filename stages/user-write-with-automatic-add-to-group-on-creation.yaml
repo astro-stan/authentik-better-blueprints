@@ -1,0 +1,31 @@
+version: 1
+metadata:
+  name: Stage - User Write With Automatic Add To Group on Creation
+context:
+  create_users_as_inactive: true
+  user_path_template: ""
+  group_name: new-users
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_core.group
+  id: user-write-with-automatic-add-to-group-on-creation-group
+  identifiers:
+    name: !Context group_name
+  attrs:
+    is_superuser: false
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_user_write.userwritestage
+  id: user-write-with-automatic-add-to-group-on-creation-user-write-stage
+  identifiers:
+    name: user-write-with-automatic-add-to-group-on-creation-user-write-stage
+  attrs:
+    create_users_group: !KeyOf user-write-with-automatic-add-to-group-on-creation-group
+    create_users_as_inactive: !Context create_users_as_inactive
+    user_path_template: !Context user_path_template
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
