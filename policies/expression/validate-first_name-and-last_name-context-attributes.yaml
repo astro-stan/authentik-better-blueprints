@@ -12,12 +12,25 @@ entries:
     name: validate-first_name-and-last_name-context-attributes-expression-policy
   attrs:
     expression:  |
+      # If request.use == AnonymousUser these will be taken from the DEFAULT
+      # tenant. If no default tenant is present it will fall back to the
+      # defaults set in this expression policy
+      USER_ATTRIBUTE_MIN_NAME_CHARS = "better-blueprints/user/name-min-chars"
+      USER_ATTRIBUTE_MAX_NAME_CHARS = "better-blueprints/user/name-max-chars"
+      USER_ATTRIBUTE_NAME_REGEX = "better-blueprints/user/name-regex"
+
       first_name = request.context.get("prompt_data", {}).get("first_name")
       last_name = request.context.get("prompt_data", {}).get("last_name")
 
-      min_name_chars = 2
-      max_name_chars = 20
-      allowed_chars_in_name = "a-zA-Z"
+      min_name_chars = int(request.user.group_attributes(request.http_request).get(
+          USER_ATTRIBUTE_MIN_NAME_CHARS, 2
+      ))
+      max_name_chars = int(request.user.group_attributes(request.http_request).get(
+          USER_ATTRIBUTE_MAX_NAME_CHARS, 20
+      ))
+      allowed_chars_in_name = str(request.user.group_attributes(request.http_request).get(
+          USER_ATTRIBUTE_NAME_REGEX, "a-zA-Z"
+      ))
 
       name_regex = (
           "^["

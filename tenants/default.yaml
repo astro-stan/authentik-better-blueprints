@@ -4,6 +4,13 @@ metadata:
 context:
     fqdn: authentik - default
     branding_title: authentik
+    global_attributes:
+      goauthentik.io/user/can-change-name: true
+      goauthentik.io/user/can-change-username: true
+      goauthentik.io/user/can-change-email: true
+      better-blueprints/user/name-min-chars: 2
+      better-blueprints/user/name-max-chars: 20
+      better-blueprints/user/name-regex: a-zA-Z
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
@@ -40,3 +47,4 @@ entries:
     flow_authentication: !Find [authentik_flows.flow, [slug, default-authentication-flow]]
     flow_invalidation: !Find [authentik_flows.flow, [slug, default-invalidation-flow]]
     flow_user_settings: !Find [authentik_flows.flow, [slug, default-user-settings-flow]]
+    attributes: !Context global_attributes
