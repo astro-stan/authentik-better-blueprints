@@ -21,7 +21,7 @@ entries:
 - model: authentik_stages_prompt.prompt
   id: default-invalidation-logout-dummy-prompt
   identifiers:
-    field_key: logout-dummy
+    field_key: logout_dummy
     label: Are you sure you want to logout?
   attrs:
     order: 0
