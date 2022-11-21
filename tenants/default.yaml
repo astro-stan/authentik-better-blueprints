@@ -8,9 +8,16 @@ context:
       goauthentik.io/user/can-change-name: true
       goauthentik.io/user/can-change-username: true
       goauthentik.io/user/can-change-email: true
-      better-blueprints/user/name-min-chars: 2
-      better-blueprints/user/name-max-chars: 20
-      better-blueprints/user/name-regex: a-zA-Z
+      better-blueprints/user/name-regex: >-
+        ^[a-zA-Z]{2,20}$
+      better-blueprints/user/name-validation-error-message: >-
+        Names must contain only alphabetic characters and be between 2 and 20
+        characters long
+      better-blueprints/user/password-regex: >-
+        ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$
+      better-blueprints/user/password-validation-error-message: >-
+        Passwords must consist of minimum eight characters, at least one
+        uppercase letter, at least one lowercase letter and at least one number
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
