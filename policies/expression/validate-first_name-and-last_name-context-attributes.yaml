@@ -4,6 +4,11 @@ metadata:
 context: {}
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate Generic Prompt Field Data
+    required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_policies_expression.expressionpolicy
@@ -12,52 +17,29 @@ entries:
     name: validate-first_name-and-last_name-context-attributes-expression-policy
   attrs:
     expression:  |
-      # If request.use == AnonymousUser these will be taken from the DEFAULT
+      # If request.user == AnonymousUser these will be taken from the DEFAULT
       # tenant. If no default tenant is present it will fall back to the
       # defaults set in this expression policy
-      USER_ATTRIBUTE_MIN_NAME_CHARS = "better-blueprints/user/name-min-chars"
-      USER_ATTRIBUTE_MAX_NAME_CHARS = "better-blueprints/user/name-max-chars"
       USER_ATTRIBUTE_NAME_REGEX = "better-blueprints/user/name-regex"
+      USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE = "better-blueprints/user/name-validation-error-message"
 
-      first_name = request.context.get("prompt_data", {}).get("first_name")
-      last_name = request.context.get("prompt_data", {}).get("last_name")
-
-      min_name_chars = int(request.user.group_attributes(request.http_request).get(
-          USER_ATTRIBUTE_MIN_NAME_CHARS, 2
-      ))
-      max_name_chars = int(request.user.group_attributes(request.http_request).get(
-          USER_ATTRIBUTE_MAX_NAME_CHARS, 20
-      ))
-      allowed_chars_in_name = str(request.user.group_attributes(request.http_request).get(
-          USER_ATTRIBUTE_NAME_REGEX, "a-zA-Z"
-      ))
-
-      name_regex = (
-          "^["
-          f"{allowed_chars_in_name}"
-          "]{"
-          f"{min_name_chars},{max_name_chars}"
-          "}$"
+      regex = request.user.group_attributes(request.http_request).get(
+              USER_ATTRIBUTE_NAME_REGEX, "^[a-zA-Z]{2,20}$"
       )
-      err_msg = (
-          "'{name}' "
-          f"must be between {min_name_chars}-{max_name_chars} characters in length "
-          f"and contain only {allowed_chars_in_name} characters."
+      err_msg = request.user.group_attributes(request.http_request).get(
+          USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE, None
       )
 
-      valid = True
+      result = ak_call_policy(
+          "validate-generic-prompt-field-data-expression-policy",
+          regex=regex,
+          fields=("first_name", "last_name"),
+      )
 
-      if not first_name or not last_name:
-          return False
+      if not result.passing and err_msg:
+          ak_message(err_msg)
 
-      if not regex_match(first_name, name_regex):
-          ak_message(err_msg.format(name="First name"))
-          valid = False
-      if not regex_match(last_name, name_regex):
-          ak_message(err_msg.format(name="Last name"))
-          valid = False
-
-      return valid
+      return result.passing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
