@@ -4,6 +4,11 @@ metadata:
 context: {}
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate first_name and last_name Context Attributes
+    required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_policies_expression.expressionpolicy
@@ -15,15 +20,15 @@ entries:
       result = ak_call_policy(
           "validate-first_name-and-last_name-context-attributes-expression-policy",
       )
+      for msg in result.messages:
+          ak_message(msg)
 
       if result.passing:
         first_name = request.context["prompt_data"]["first_name"]
         last_name = request.context["prompt_data"]["last_name"]
-
         request.context["prompt_data"]["name"] = f"{first_name} {last_name}"
-        return True
 
-      return False
+      return result.passing
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
