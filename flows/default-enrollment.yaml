@@ -179,11 +179,13 @@ entries:
     re_evaluate_policies: true
 
 - model: authentik_flows.flowstagebinding
+  id: default-enrollment-invitation-deny-without-invitation-stage-binding
   identifiers:
     stage: !KeyOf default-enrollment-deny-without-invitation-invitation-stage
     target: !KeyOf flow
   attrs:
     order: 200
+    re_evaluate_policies: true
 
 - model: authentik_flows.flowstagebinding
   identifiers:
@@ -217,6 +219,15 @@ entries:
   identifiers:
     policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy
     target: !KeyOf default-enrollment-invitation-token-prompt-stage-binding
+  attrs:
+    order: 0
+    enabled: true
+    negate: true
+    timeout: 30
+- model: authentik_policies.policybinding
+  identifiers:
+    policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy
+    target: !KeyOf default-enrollment-invitation-deny-without-invitation-stage-binding
   attrs:
     order: 0
     enabled: true
