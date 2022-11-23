@@ -49,7 +49,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Validate password Context Attribute Complexity
+      name: Password Policy - Normal
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -160,7 +160,7 @@ entries:
     validation_policies:
     - !Find [authentik_policies_expression.expressionpolicy, [name, create-name-context-attribute-from-first_name-and-last_name-context-attributes-expression-policy]]
     - !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-unique-expression-policy]]
-    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-password-context-attribute-complexity-expression-policy]]
+    - !Find [authentik_policies_password.passwordpolicy, [name, normal-password-policy]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
