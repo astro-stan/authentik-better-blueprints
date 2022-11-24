@@ -1,6 +1,6 @@
 version: 1
 metadata:
-  name: Stage - Default User Login
+  name: User Login Stage - Default
 context:
   session_duration: seconds=0
 entries:

@@ -1,6 +1,6 @@
 version: 1
 metadata:
-  name: Stage - User Write With Add To Group and Inactive on Creation
+  name: User Write Stage - With Add To Group and Inactive on Creation
 context:
   create_users_as_inactive: true
   user_path_template: ""

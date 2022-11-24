@@ -55,13 +55,13 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Stage - Default User Login
+      name: User Login Stage - Default
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Stage - User Write With Add To Group and Inactive on Creation
+      name: User Write Stage - With Add To Group and Inactive on Creation
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
