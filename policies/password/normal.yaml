@@ -4,20 +4,21 @@ metadata:
 context:
   password_field: password
   check_have_i_been_pwned: true
-  hibp_allowed_count: 2
+  hibp_allowed_count: 1
   check_zxcvbn: true
-  zxcvbn_score_threshold: 2
+  zxcvbn_score_threshold: 3
   check_static_rules: true
-  amount_digits: 1
+  amount_digits: 0
   amount_uppercase: 1
   amount_lowercase: 1
-  amount_symbols: 0
+  amount_symbols: 1
   length_min: 10
   symbol_charset: >-
-    !\"#$%&'()*+,-./:;<=>?@[]^_`{|}~
+    !\"#$%&'()*+,-./:;<=>?@[]^_`{|}~0123456789
   error_message: >-
     Passwords must consist of minimum 10 characters, at least one uppercase
-    letter, at least one lowercase letter and at least one digit
+    letter, at least one lowercase letter and at least one digit or special
+    character
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
