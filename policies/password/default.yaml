@@ -1,6 +1,6 @@
 version: 1
 metadata:
-  name: Password Policy - Normal
+  name: Password Policy - Default
 context:
   password_field: password
   check_have_i_been_pwned: true
@@ -24,9 +24,9 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_policies_password.passwordpolicy
-  id: normal-password-policy
+  id: default-password-policy
   identifiers:
-    name: normal-password-policy
+    name: default-password-policy
   attrs:
     password_field: !Context password_field
     amount_digits: !Context amount_digits
