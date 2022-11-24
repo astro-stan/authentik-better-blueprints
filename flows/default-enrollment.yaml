@@ -61,7 +61,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Stage - User Write With Automatic Add To Group on Creation
+      name: Stage - User Write With Add To Group and Inactive on Creation
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -196,7 +196,7 @@ entries:
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !Find [authentik_stages_user_write.userwritestage, [name, user-write-with-automatic-add-to-group-on-creation-user-write-stage]]
+    stage: !Find [authentik_stages_user_write.userwritestage, [name, user-write-with-add-to-group-and-inactive-on-creation-user-write-stage]]
     target: !KeyOf flow
   attrs:
     order: 400

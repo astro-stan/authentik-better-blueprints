@@ -13,7 +13,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Stage - Default Password and Password Repeat
+      name: Stage - Password and Password Repeat
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -75,7 +75,7 @@ entries:
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !Find [authentik_stages_prompt.promptstage, [name, default-password-and-password-repeat-prompt-stage]]
+    stage: !Find [authentik_stages_prompt.promptstage, [name, password-and-password-repeat-prompt-stage]]
     target: !KeyOf flow
   attrs:
     order: 300
