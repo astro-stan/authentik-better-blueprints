@@ -1,8 +1,8 @@
 version: 1
 metadata:
-  name: Prompt - Locale Field
+  name: Prompt - email
 context:
-  field_order: 410
+  order: 310
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -10,20 +10,20 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_stages_prompt.prompt
-  id: locale-field-prompt
+  id: email-prompt
   identifiers:
-    field_key: attributes.settings.locale
-    label: Locale
+    field_key: email
+    label: Email
   attrs:
-    order: !Context field_order
+    order: !Context order
     placeholder: |
       try:
-          return user.attributes.get("settings", {}).get("locale", "")
+          return user.email
       except:
-          return ''
+          return 'Email'
     placeholder_expression: true
     required: true
-    type: ak-locale
+    type: email
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

@@ -9,7 +9,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - Username Without Duplicate Check Field
+      name: Prompt - username Without Duplicate Check
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -21,7 +21,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - First and Last Name Fields
+      name: Prompt - first_name and last_name
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -33,7 +33,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - Email Field
+      name: Prompt - email
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -45,7 +45,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - Locale Field
+      name: Prompt - attributes.settings.locale
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint

@@ -1,9 +1,8 @@
 version: 1
 metadata:
-  name: Prompt - Password and Password Repeat Fields
+  name: Prompt - attributes.settings.locale
 context:
-  password_field_order: 610
-  password_repeat_field_order: 620
+  order: 410
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -11,28 +10,20 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_stages_prompt.prompt
-  id: password-field-prompt
+  id: attributes-settings-locale-prompt
   identifiers:
-    field_key: password
-    label: Password
+    field_key: attributes.settings.locale
+    label: Locale
   attrs:
-    order: !Context password_field_order
-    placeholder: Password
-    placeholder_expression: false
+    order: !Context order
+    placeholder: |
+      try:
+          return user.attributes.get("settings", {}).get("locale", "")
+      except:
+          return ''
+    placeholder_expression: true
     required: true
-    type: password
-
-- model: authentik_stages_prompt.prompt
-  id: password-repeat-field-prompt
-  identifiers:
-    field_key: password_repeat
-    label: Password (repeat)
-  attrs:
-    order: !Context password_repeat_field_order
-    placeholder: Password (repeat)
-    placeholder_expression: false
-    required: true
-    type: password
+    type: ak-locale
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

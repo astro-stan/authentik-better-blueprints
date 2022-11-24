@@ -13,7 +13,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - First and Last Name Fields
+      name: Prompt - first_name and last_name
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -25,19 +25,19 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - Username With Duplicate Check Field
+      name: Prompt - username With Duplicate Check
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - Password and Password Repeat Fields
+      name: Prompt - password and password_repeat
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - Email Field
+      name: Prompt - email
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
