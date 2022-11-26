@@ -13,6 +13,18 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Deny Stage - Default
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate User Is Authenticated
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: Prompt Stage - Password and Password Repeat
     required: true
 
@@ -35,6 +47,7 @@ entries:
   identifiers:
     slug: default-recovery-flow
   attrs:
+    denied_action: continue
     designation: recovery
     name: !Context name
     title: !Context title
@@ -60,32 +73,41 @@ entries:
     use_global_settings: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
+  id: default-recovery-flow-default-deny-stage-binding
   identifiers:
-    stage: !KeyOf default-recovery-identification-stage
+    stage: !Find [authentik_stages_deny.denystage, [name, default-deny-stage]]
     target: !KeyOf flow
   attrs:
     order: 100
+    re_evaluate_policies: true
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-recovery-confirm-email-email-stage
+    stage: !KeyOf default-recovery-identification-stage
     target: !KeyOf flow
   attrs:
     order: 200
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !Find [authentik_stages_prompt.promptstage, [name, password-and-password-repeat-prompt-stage]]
+    stage: !KeyOf default-recovery-confirm-email-email-stage
     target: !KeyOf flow
   attrs:
     order: 300
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !Find [authentik_stages_user_write.userwritestage, [name, default-user-write-stage]]
+    stage: !Find [authentik_stages_prompt.promptstage, [name, password-and-password-repeat-prompt-stage]]
     target: !KeyOf flow
   attrs:
     order: 400
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !Find [authentik_stages_user_write.userwritestage, [name, default-user-write-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 500
 
 - model: authentik_flows.flowstagebinding
   identifiers:
@@ -94,4 +116,13 @@ entries:
   attrs:
     order: 900
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies.policybinding
+  identifiers:
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
+    target: !KeyOf default-recovery-flow-default-deny-stage-binding
+  attrs:
+    order: 0
+    enabled: true
+    negate: false
+    timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

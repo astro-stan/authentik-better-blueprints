@@ -13,6 +13,18 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Deny Stage - Default
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate User Is Authenticated
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: Prompt - first_name and last_name
     required: true
 
@@ -95,6 +107,7 @@ entries:
   identifiers:
     slug: default-enrollment-flow
   attrs:
+    denied_action: continue
     designation: enrollment
     name: !Context name
     title: !Context title
@@ -163,11 +176,20 @@ entries:
     - !Find [authentik_policies_password.passwordpolicy, [name, default-password-policy]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
+  id: default-enrollment-flow-default-deny-stage-binding
+  identifiers:
+    stage: !Find [authentik_stages_deny.denystage, [name, default-deny-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 100
+    re_evaluate_policies: true
+
+- model: authentik_flows.flowstagebinding
   identifiers:
     stage: !KeyOf default-enrollment-allow-no-invitation-invitation-stage
     target: !KeyOf flow
   attrs:
-    order: 0
+    order: 200
 
 - model: authentik_flows.flowstagebinding
   id: default-enrollment-invitation-token-prompt-stage-binding
@@ -175,7 +197,7 @@ entries:
     stage: !KeyOf default-enrollment-invitation-token-prompt-stage
     target: !KeyOf flow
   attrs:
-    order: 100
+    order: 300
     re_evaluate_policies: true
 
 - model: authentik_flows.flowstagebinding
@@ -184,7 +206,7 @@ entries:
     stage: !KeyOf default-enrollment-deny-without-invitation-invitation-stage
     target: !KeyOf flow
   attrs:
-    order: 200
+    order: 400
     re_evaluate_policies: true
 
 - model: authentik_flows.flowstagebinding
@@ -192,21 +214,21 @@ entries:
     stage: !KeyOf default-enrollment-user-info-prompt-stage
     target: !KeyOf flow
   attrs:
-    order: 300
+    order: 500
 
 - model: authentik_flows.flowstagebinding
   identifiers:
     stage: !Find [authentik_stages_user_write.userwritestage, [name, user-write-with-add-to-group-and-inactive-on-creation-user-write-stage]]
     target: !KeyOf flow
   attrs:
-    order: 400
+    order: 600
 
 - model: authentik_flows.flowstagebinding
   identifiers:
     stage: !KeyOf default-enrollment-confirm-email-email-stage
     target: !KeyOf flow
   attrs:
-    order: 500
+    order: 700
 
 - model: authentik_flows.flowstagebinding
   identifiers:
@@ -217,6 +239,16 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_policies.policybinding
   identifiers:
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
+    target: !KeyOf default-enrollment-flow-default-deny-stage-binding
+  attrs:
+    order: 0
+    enabled: true
+    negate: false
+    timeout: 30
+
+- model: authentik_policies.policybinding
+  identifiers:
     policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy
     target: !KeyOf default-enrollment-invitation-token-prompt-stage-binding
   attrs:
@@ -224,6 +256,7 @@ entries:
     enabled: true
     negate: true
     timeout: 30
+
 - model: authentik_policies.policybinding
   identifiers:
     policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy

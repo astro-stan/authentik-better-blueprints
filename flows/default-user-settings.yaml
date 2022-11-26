@@ -9,6 +9,18 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Deny Stage - Default
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate User Is Authenticated
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: Prompt - username Without Duplicate Check
     required: true
 
@@ -97,6 +109,7 @@ entries:
   identifiers:
     slug: default-user-settings-flow
   attrs:
+    denied_action: continue
     designation: stage_configuration
     name: !Context name
     title: !Context title
@@ -120,11 +133,20 @@ entries:
     - !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-unique-to-current-user-expression-policy]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
+  id: default-user-settings-flow-default-deny-stage-binding
+  identifiers:
+    stage: !Find [authentik_stages_deny.denystage, [name, default-deny-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 100
+    re_evaluate_policies: true
+
+- model: authentik_flows.flowstagebinding
   identifiers:
     stage: !KeyOf default-user-settings-prompt-stage
     target: !KeyOf flow
   attrs:
-    order: 0
+    order: 200
 
 - model: authentik_flows.flowstagebinding
   identifiers:
@@ -133,4 +155,13 @@ entries:
   attrs:
     order: 900
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies.policybinding
+  identifiers:
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
+    target: !KeyOf default-user-settings-flow-default-deny-stage-binding
+  attrs:
+    order: 0
+    enabled: true
+    negate: true
+    timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
