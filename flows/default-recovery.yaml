@@ -5,15 +5,18 @@ context:
   name: Welcome to authentik!
   title: Welcome to authentik!
   show_matched_user: false
-  email_confirmation_sender: system@authentik.local
-  email_recovery_subject: authentik
-  email_recovery_template: email/password_reset.html
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
       name: Prompt Stage - Password and Password Repeat
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Email Stage - Default Recovery
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -49,15 +52,6 @@ entries:
     - email
     - username
     show_matched_user: !Context show_matched_user
-
-- model: authentik_stages_email.emailstage
-  id: default-recovery-confirm-email-email-stage
-  identifiers:
-    name: default-recovery-confirm-email-email-stage
-  attrs:
-    subject: !Context email_recovery_subject
-    template: !Context email_recovery_template
-    use_global_settings: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
@@ -68,7 +62,7 @@ entries:
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-recovery-confirm-email-email-stage
+    stage: !Find [authentik_stages_email.emailstage, [name, default-recovery-email-stage]]
     target: !KeyOf flow
   attrs:
     order: 200
