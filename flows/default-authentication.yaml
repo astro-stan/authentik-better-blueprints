@@ -15,6 +15,12 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Authenticator Validator Stage - Default TOTP
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: User Login Stage - Default
     required: true
 
@@ -40,7 +46,6 @@ entries:
     designation: authentication
     name: !Context name
     title: !Context title
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_stages_identification.identificationstage
@@ -55,24 +60,19 @@ entries:
     password_stage: !Find [authentik_stages_password.passwordstage, [name, inbuilt-backend-with-default-password-change-flow-password-stage]]
     enrollment_flow: !Find [authentik_flows.flow, [slug, default-enrollment-flow]]
     recovery_flow: !Find [authentik_flows.flow, [slug, default-recovery-flow]]
-
-# - model: authentik_stages_authenticator_validate.authenticatorvalidatestage
-#   id: default-authentication-mfa-validation
-#   identifiers:
-#     name: default-authentication-mfa-validation
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
     stage: !KeyOf default-authentication-identification-stage
     target: !KeyOf flow
   attrs:
-    order: 0
+    order: 100
 
-# - model: authentik_flows.flowstagebinding
-#   identifiers:
-#     order: 30
-#     stage: !KeyOf default-authentication-mfa-validation
-#     target: !KeyOf flow
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    order: 200
+    stage: !Find [authentik_stages_authenticator_validate.authenticatorvalidatestage, [name, default-totp-authenticator-validator-stage]]
+    target: !KeyOf flow
 
 - model: authentik_flows.flowstagebinding
   identifiers:
