@@ -51,6 +51,18 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Expression Policy - Validate email Context Attribute Is Different Than Currently Set
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Email Stage - Default Confirmation
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: User Write Stage - Default
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -127,10 +139,28 @@ entries:
     order: 0
 
 - model: authentik_flows.flowstagebinding
+  id: default-user-settings-defaul-confirmation-email-stage-binding
+  identifiers:
+    stage: !Find [authentik_stages_email.emailstage, [name, default-confirmation-email-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 100
+    re_evaluate_policies: true
+
+- model: authentik_flows.flowstagebinding
   identifiers:
     stage: !Find [authentik_stages_user_write.userwritestage, [name, default-user-write-stage]]
     target: !KeyOf flow
   attrs:
     order: 900
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies.policybinding
+  identifiers:
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-different-than-currently-set-expression-policy]]
+    target: !KeyOf default-user-settings-defaul-confirmation-email-stage-binding
+  attrs:
+    order: 0
+    enabled: true
+    negate: false
+    timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
