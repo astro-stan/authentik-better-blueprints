@@ -10,6 +10,18 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Deny Stage - Default
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Expression Policy - Validate User Is Authenticated
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: Prompt Stage - Current Password
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -34,17 +46,35 @@ entries:
     configure_flow: !KeyOf flow
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
+  id: default-totp-authenticator-setup-flow-default-deny-stage-binding
+  identifiers:
+    stage: !Find [authentik_stages_deny.denystage, [name, default-deny-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 100
+    re_evaluate_policies: true
+
+- model: authentik_flows.flowstagebinding
   identifiers:
     stage: !Find [authentik_stages_prompt.promptstage, [name, current-password-prompt-stage]]
     target: !KeyOf flow
   attrs:
-    order: 100
+    order: 200
 
 - model: authentik_flows.flowstagebinding
   identifiers:
     stage: !KeyOf default-totp-authenticator-setup-stage
     target: !KeyOf flow
   attrs:
-    order: 200
+    order: 300
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies.policybinding
+  identifiers:
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
+    target: !KeyOf default-totp-authenticator-setup-flow-default-deny-stage-binding
+  attrs:
+    order: 0
+    enabled: true
+    negate: true
+    timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
