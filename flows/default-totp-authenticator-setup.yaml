@@ -1,0 +1,50 @@
+version: 1
+metadata:
+  name: Flow - Default TOTP Authenticator Setup
+context:
+  digits: 6
+  name: Configure TOTP Authenticator
+  title: Configure TOTP Authenticator
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Prompt Stage - Current Password
+    required: true
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flow
+  id: flow
+  identifiers:
+    slug: default-totp-authenticator-setup-flow
+  attrs:
+    designation: stage_configuration
+    name: !Context name
+    title: !Context title
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_authenticator_totp.authenticatortotpstage
+  id: default-totp-authenticator-setup-stage
+  identifiers:
+    name: default-totp-authenticator-setup-stage
+  attrs:
+    digits: !Context digits
+    configure_flow: !KeyOf flow
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !Find [authentik_stages_prompt.promptstage, [name, current-password-prompt-stage]]
+    target: !KeyOf flow
+  attrs:
+    order: 100
+
+- model: authentik_flows.flowstagebinding
+  identifiers:
+    stage: !KeyOf default-totp-authenticator-setup-stage
+    target: !KeyOf flow
+  attrs:
+    order: 200
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
