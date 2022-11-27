@@ -4,9 +4,6 @@ metadata:
 context:
   name: Welcome to authentik!
   title: Welcome to authentik!
-  email_confirmation_sender: system@authentik.local
-  email_confirmation_subject: authentik
-  email_confirmation_template: email/account_confirmation.html
   invitation_token_field_label: Invitaiton ID
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -62,6 +59,12 @@ entries:
   attrs:
     identifiers:
       name: Password Policy - Default
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Email Stage - Confirmation With User Activation
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -148,16 +151,6 @@ entries:
   attrs:
     continue_flow_without_invitation: false
 
-- model: authentik_stages_email.emailstage
-  id: default-enrollment-confirm-email-email-stage
-  identifiers:
-    name: default-enrollment-confirm-email-email-stage
-  attrs:
-    subject: !Context email_confirmation_subject
-    template: !Context email_confirmation_template
-    use_global_settings: true
-    activate_user_on_success: true
-
 - model: authentik_stages_prompt.promptstage
   id: default-enrollment-user-info-prompt-stage
   identifiers:
@@ -225,7 +218,7 @@ entries:
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-enrollment-confirm-email-email-stage
+    stage: !Find [authentik_stages_email.emailstage, [name, confirmation-with-user-activation-email-stage]]
     target: !KeyOf flow
   attrs:
     order: 700
