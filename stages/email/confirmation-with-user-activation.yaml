@@ -2,9 +2,18 @@ version: 1
 metadata:
   name: Email Stage - Confirmation With User Activation
 context:
-  from_address: system@authentik.local
   subject: authentik
   template: email/account_confirmation.html
+  from_address: system@authentik.local
+  token_expiry: 30
+  use_global_settings: true
+  host: localhost
+  port: 25
+  username: ""
+  password: ""
+  use_tls: false
+  use_ssl: false
+  timeout: 10
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -20,8 +29,18 @@ entries:
     subject: !Context subject
     template: !Context template
     from_address: !Context from_address
+    token_expiry: !Context token_expiry
+    use_global_settings: !Context use_global_settings
+    host: !Context host
+    port: !Context port
+    username: !Context username
+    password: !Context password
+    use_tls: !Context use_tls
+    use_ssl: !Context use_ssl
+    timeout: !Context timeout
     activate_user_on_success: true
-    use_global_settings: true
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
