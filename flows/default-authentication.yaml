@@ -15,7 +15,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Password Stage - Inbuilt Backend With default-password-change Flow
+      name: Password Stage - Default
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -65,7 +65,7 @@ entries:
     - email
     - username
     show_matched_user: false
-    password_stage: !Find [authentik_stages_password.passwordstage, [name, inbuilt-backend-with-default-password-change-flow-password-stage]]
+    password_stage: !Find [authentik_stages_password.passwordstage, [name, default-password-stage]]
     enrollment_flow: !Find [authentik_flows.flow, [slug, default-enrollment-flow]]
     recovery_flow: !Find [authentik_flows.flow, [slug, default-recovery-flow]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

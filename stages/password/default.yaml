@@ -1,7 +1,11 @@
 version: 1
 metadata:
-  name: Password Stage - Inbuilt Backend With default-password-change Flow
-context: {}
+  name: Password Stage - Default
+context:
+  backends:
+    - authentik.core.auth.InbuiltBackend
+    # - authentik.sources.ldap.auth.LDAPBackend
+    # - authentik.core.auth.TokenBackend
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
@@ -16,14 +20,11 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_stages_password.passwordstage
-  id: inbuilt-backend-with-default-password-change-flow-password-stage
+  id: default-password-stage
   identifiers:
-    name: inbuilt-backend-with-default-password-change-flow-password-stage
+    name: default-password-stage
   attrs:
-    backends:
-    - authentik.core.auth.InbuiltBackend
-    # - authentik.sources.ldap.auth.LDAPBackend
-    # - authentik.core.auth.TokenBackend
+    backends: !Context backends
     configure_flow: !Find [authentik_flows.flow, [slug, default-password-change-flow]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
