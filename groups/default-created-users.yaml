@@ -1,30 +1,24 @@
 version: 1
 metadata:
-  name: User Write Stage - With Add To Group and Inactive on Creation
+  name: Group - Default Created Users
 context:
-  create_users_as_inactive: true
-  user_path_template: ""
+  name: new-users
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Group - Default Created Users
-    required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_core.group
+  id: default-created-users-group
+  identifiers:
+    name: !Context name
+  attrs:
+    is_superuser: false
+    attributes:
+      better-blueprints/id: default-created-users-group
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_user_write.userwritestage
-  id: user-write-with-add-to-group-and-inactive-on-creation-user-write-stage
-  identifiers:
-    name: user-write-with-add-to-group-and-inactive-on-creation-user-write-stage
-  attrs:
-    create_users_group: !Find [authentik_core.group, [attributes__contains, {better-blueprints/id: default-created-users-group}]]
-    create_users_as_inactive: !Context create_users_as_inactive
-    user_path_template: !Context user_path_template
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
