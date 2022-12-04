@@ -9,12 +9,6 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Validate User Is Authenticated
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
       name: Prompt - username Without Duplicate Check
     required: true
 
@@ -116,6 +110,7 @@ entries:
   identifiers:
     slug: default-user-settings-flow
   attrs:
+    authentication: require_authenticated
     denied_action: continue
     designation: stage_configuration
     name: !Context name
@@ -162,16 +157,6 @@ entries:
   attrs:
     order: 900
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_policies.policybinding
-  identifiers:
-    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
-    target: !KeyOf flow
-  attrs:
-    order: 0
-    enabled: true
-    negate: false
-    timeout: 30
-
 - model: authentik_policies.policybinding
   identifiers:
     policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-different-than-currently-set-expression-policy]]

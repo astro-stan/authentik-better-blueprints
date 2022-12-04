@@ -10,12 +10,6 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Validate User Is Authenticated
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
       name: Prompt Stage - Current Password
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -27,6 +21,8 @@ entries:
   identifiers:
     slug: default-totp-authenticator-setup-flow
   attrs:
+    authentication: require_authenticated
+    denied_action: continue
     designation: stage_configuration
     name: !Context name
     title: !Context title
@@ -54,13 +50,4 @@ entries:
   attrs:
     order: 200
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_policies.policybinding
-  identifiers:
-    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
-    target: !KeyOf flow
-  attrs:
-    order: 0
-    enabled: true
-    negate: false
-    timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

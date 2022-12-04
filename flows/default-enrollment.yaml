@@ -10,12 +10,6 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Validate User Is Authenticated
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
       name: Prompt - first_name and last_name
     required: true
 
@@ -105,6 +99,7 @@ entries:
   identifiers:
     slug: default-enrollment-flow
   attrs:
+    authentication: require_unauthenticated
     denied_action: continue
     designation: enrollment
     name: !Context name
@@ -216,16 +211,6 @@ entries:
   attrs:
     order: 700
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_policies.policybinding
-  identifiers:
-    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
-    target: !KeyOf flow
-  attrs:
-    order: 0
-    enabled: true
-    negate: true
-    timeout: 30
-
 - model: authentik_policies.policybinding
   identifiers:
     policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy

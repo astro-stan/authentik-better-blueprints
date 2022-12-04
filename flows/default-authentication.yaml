@@ -9,12 +9,6 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Validate User Is Authenticated
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
       name: Password Stage - Default
     required: true
 
@@ -50,6 +44,7 @@ entries:
   identifiers:
     slug: default-authentication-flow
   attrs:
+    authentication: require_unauthenticated
     denied_action: continue
     designation: authentication
     name: !Context name
@@ -89,13 +84,4 @@ entries:
   attrs:
     order: 900
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_policies.policybinding
-  identifiers:
-    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
-    target: !KeyOf flow
-  attrs:
-    order: 0
-    enabled: true
-    negate: true
-    timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

@@ -6,11 +6,6 @@ context:
   title: Logout
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Expression Policy - Validate User Is Authenticated
-    required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -20,6 +15,7 @@ entries:
   identifiers:
     slug: default-invalidation-flow
   attrs:
+    authentication: require_authenticated
     denied_action: continue
     designation: invalidation
     name: !Context name
@@ -64,13 +60,4 @@ entries:
   attrs:
     order: 900
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_policies.policybinding
-  identifiers:
-    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-user-is-authenticated-expression-policy]]
-    target: !KeyOf flow
-  attrs:
-    order: 0
-    enabled: true
-    negate: false
-    timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
