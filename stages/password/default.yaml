@@ -6,12 +6,14 @@ context:
     - authentik.core.auth.InbuiltBackend
     # - authentik.sources.ldap.auth.LDAPBackend
     # - authentik.core.auth.TokenBackend
+  password_change_flow_slug: default-password-change-flow
+  password_change_flow_blueprint_name: Flow - Default Password Change
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Flow - Default Password Change
+      name: !Context password_change_flow_blueprint_name
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -25,7 +27,7 @@ entries:
     name: default-password-stage
   attrs:
     backends: !Context backends
-    configure_flow: !Find [authentik_flows.flow, [slug, default-password-change-flow]]
+    configure_flow: !Find [authentik_flows.flow, [slug, !Context password_change_flow_slug]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
