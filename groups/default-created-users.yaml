@@ -10,11 +10,12 @@ entries:
 - model: authentik_core.group
   id: default-created-users-group
   identifiers:
-    name: !Context name
-  attrs:
-    is_superuser: false
     attributes:
       better-blueprints/id: default-created-users-group
+  attrs:
+    is_superuser: false
+    name: !Context name
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
