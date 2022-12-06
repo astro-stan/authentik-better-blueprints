@@ -4,7 +4,6 @@ metadata:
 context:
   last_auth_threshold: minutes=5
   not_configured_action: skip
-  device_classes: ["totp"]
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
@@ -26,7 +25,8 @@ entries:
     last_auth_threshold: !Context last_auth_threshold
     configuration_stages:
     - !Find [authentik_stages_authenticator_totp.authenticatortotpstage, [name, default-totp-authenticator-setup-stage]]
-    device_classes: !Context device_classes
+    device_classes:
+    - totp
     not_configured_action: !Context not_configured_action
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
