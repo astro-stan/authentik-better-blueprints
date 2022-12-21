@@ -3,14 +3,17 @@ metadata:
   name: Password Stage - Default
 context:
   backends:
-    - authentik.core.auth.InbuiltBackend
-    # - authentik.sources.ldap.auth.LDAPBackend
-    # - authentik.core.auth.TokenBackend
+  - authentik.core.auth.InbuiltBackend
+  # - authentik.sources.ldap.auth.LDAPBackend
+  # - authentik.core.auth.TokenBackend
   password_change_flow_slug: default-password-change-flow
   password_change_flow_blueprint_name: Flow - Default Password Change
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context password_change_flow_blueprint_name
+  - !Context password_change_flow_slug
   attrs:
     identifiers:
       name: !Context password_change_flow_blueprint_name

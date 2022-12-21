@@ -1,0 +1,61 @@
+version: 1
+metadata:
+  name: Identification Stage - Default
+context:
+  show_matched_user: false
+  user_fields:
+  - email
+  - username
+  password_stage_name: default-password-stage
+  password_stage_blueprint_name: Password Stage - Default
+  recovery_flow_slug: default-recovery-flow
+  recovery_flow_blueprint_name: Flow - Default Recovery
+  enrollment_flow_slug: default-enrollment-flow
+  enrollment_flow_blueprint_name: Flow - Default Enrollment
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context password_stage_blueprint_name
+  - !Context password_stage_name
+  attrs:
+    identifiers:
+      name: !Context password_stage_blueprint_name
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context recovery_flow_blueprint_name
+  - !Context recovery_flow_slug
+  attrs:
+    identifiers:
+      name: !Context recovery_flow_blueprint_name
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context enrollment_flow_blueprint_name
+  - !Context enrollment_flow_slug
+  attrs:
+    identifiers:
+      name: !Context enrollment_flow_blueprint_name
+    required: true
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_stages_identification.identificationstage
+  id: default-identification-stage
+  identifiers:
+    name: default-identification-stage
+  attrs:
+    user_fields: !Context user_fields
+    show_matched_user: !Context show_matched_user
+    password_stage: !Find [authentik_stages_password.passwordstage, [name, !Context password_stage_name]]
+    enrollment_flow: !Find [authentik_flows.flow, [slug, !Context enrollment_flow_slug]]
+    recovery_flow: !Find [authentik_flows.flow, [slug, !Context recovery_flow_slug]]
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

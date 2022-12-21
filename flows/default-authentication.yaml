@@ -9,7 +9,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Password Stage - Default
+      name: Identification Stage - Default
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -23,18 +23,6 @@ entries:
     identifiers:
       name: User Login Stage - Default
     required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Flow - Default Recovery
-    required: false
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Flow - Default Enrollment
-    required: false
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -51,37 +39,26 @@ entries:
     title: !Context title
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_identification.identificationstage
-  id: default-authentication-identification-stage
-  identifiers:
-    name: default-authentication-identification-stage
-  attrs:
-    user_fields:
-    - email
-    - username
-    show_matched_user: false
-    password_stage: !Find [authentik_stages_password.passwordstage, [name, default-password-stage]]
-    enrollment_flow: !Find [authentik_flows.flow, [slug, default-enrollment-flow]]
-    recovery_flow: !Find [authentik_flows.flow, [slug, default-recovery-flow]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-authentication-identification-stage
     target: !KeyOf flow
   attrs:
     order: 100
+    stage: !Find [authentik_stages_identification.identificationstage, [name, default-identification-stage]]
 
 - model: authentik_flows.flowstagebinding
   identifiers:
+    target: !KeyOf flow
+  attrs:
     order: 200
     stage: !Find [authentik_stages_authenticator_validate.authenticatorvalidatestage, [name, default-totp-authenticator-validator-stage]]
-    target: !KeyOf flow
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !Find [authentik_stages_user_login.userloginstage, [name, default-user-login-stage]]
     target: !KeyOf flow
   attrs:
     order: 900
+    stage: !Find [authentik_stages_user_login.userloginstage, [name, default-user-login-stage]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
