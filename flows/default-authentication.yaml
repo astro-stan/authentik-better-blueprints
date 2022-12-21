@@ -43,22 +43,22 @@ entries:
 - model: authentik_flows.flowstagebinding
   identifiers:
     target: !KeyOf flow
+    stage: !Find [authentik_stages_identification.identificationstage, [name, default-identification-stage]]
   attrs:
     order: 100
-    stage: !Find [authentik_stages_identification.identificationstage, [name, default-identification-stage]]
 
 - model: authentik_flows.flowstagebinding
   identifiers:
     target: !KeyOf flow
+    stage: !Find [authentik_stages_authenticator_validate.authenticatorvalidatestage, [name, default-totp-authenticator-validator-stage]]
   attrs:
     order: 200
-    stage: !Find [authentik_stages_authenticator_validate.authenticatorvalidatestage, [name, default-totp-authenticator-validator-stage]]
 
 - model: authentik_flows.flowstagebinding
   identifiers:
     target: !KeyOf flow
+    stage: !Find [authentik_stages_user_login.userloginstage, [name, default-user-login-stage]]
   attrs:
     order: 900
-    stage: !Find [authentik_stages_user_login.userloginstage, [name, default-user-login-stage]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
