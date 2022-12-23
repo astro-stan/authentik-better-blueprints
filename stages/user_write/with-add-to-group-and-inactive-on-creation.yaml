@@ -25,6 +25,7 @@ entries:
     create_users_group: !Find [authentik_core.group, [attributes__contains, {better-blueprints/id: default-created-users-group}]]
     create_users_as_inactive: !Context create_users_as_inactive
     user_path_template: !Context user_path_template
+    can_create_users: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
