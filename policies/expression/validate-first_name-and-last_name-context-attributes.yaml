@@ -18,6 +18,8 @@ entries:
     name: validate-first_name-and-last_name-context-attributes-expression-policy
   attrs:
     expression:  |
+      from authentik.lib.config import CONFIG
+
       # If request.user == AnonymousUser these will be taken from the DEFAULT
       # tenant. If no default tenant is present it will fall back to the
       # defaults set in this expression policy
@@ -25,10 +27,18 @@ entries:
       USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE = "better-blueprints/user/name-validation-error-message"
 
       regex = request.user.group_attributes(request.http_request).get(
-              USER_ATTRIBUTE_NAME_REGEX, "^[a-zA-Z]{2,20}$"
+          USER_ATTRIBUTE_NAME_REGEX,
+          CONFIG.y(
+              "better_blueprints.user.name_regex", # ENV: AUTHENTIK_BETTER_BLUEPRINTS__USER__NAME_REGEX
+              "^[a-zA-Z]{2,20}$"
+          )
       )
       err_msg = request.user.group_attributes(request.http_request).get(
-          USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE, None
+          USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE,
+          CONFIG.y(
+              "better_blueprints.user.name_validation_error_message", # ENV: AUTHENTIK_BETTER_BLUEPRINTS__USER__NAME_VALIDATION_ERROR_MESSAGE
+              "Names must contain only alphabetic characters and be between 2 and 20 characters long"
+          )
       )
 
       result = ak_call_policy(
