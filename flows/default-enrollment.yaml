@@ -27,6 +27,12 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Expression Policy - Validate Invitation in Effect
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: Prompt - username With Duplicate Check
     required: true
 
@@ -80,12 +86,6 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_policies_expression.expressionpolicy
-  id: default-enrollment-validate-invitation-is-in-effect-expression-policy
-  identifiers:
-    name: default-enrollment-validate-invitation-is-in-effect-expression-policy
-  attrs:
-    expression: return request.context.get("invitation_in_effect", False)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flow
   id: flow
@@ -195,7 +195,7 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_policies.policybinding
   identifiers:
-    policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-invitation-in-effect-expression-policy]]
     target: !KeyOf default-enrollment-invitation-token-prompt-stage-binding
   attrs:
     order: 0
@@ -205,7 +205,7 @@ entries:
 
 - model: authentik_policies.policybinding
   identifiers:
-    policy: !KeyOf default-enrollment-validate-invitation-is-in-effect-expression-policy
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-invitation-in-effect-expression-policy]]
     target: !KeyOf default-enrollment-invitation-deny-without-invitation-stage-binding
   attrs:
     order: 0
