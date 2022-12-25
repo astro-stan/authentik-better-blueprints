@@ -4,7 +4,6 @@ metadata:
 context:
   name: Welcome to authentik!
   title: Welcome to authentik!
-  invitation_token_field_label: Invitaiton ID
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
@@ -35,6 +34,12 @@ entries:
   attrs:
     identifiers:
       name: Prompt - email
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Prompt - token For Invitations
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -105,17 +110,6 @@ entries:
     name: !Context name
     title: !Context title
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_prompt.prompt
-  id: default-enrollment-invitation-token-prompt
-  identifiers:
-    field_key: token
-  attrs:
-    order: 0
-    label: !Context invitation_token_field_label
-    placeholder: !Context invitation_token_field_label
-    placeholder_expression: false
-    required: true
-    type: text
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_stages_invitation.invitationstage
   id: default-enrollment-allow-no-invitation-invitation-stage
@@ -130,7 +124,7 @@ entries:
     name: default-enrollment-invitation-token-prompt-stage
   attrs:
     fields:
-    - !KeyOf default-enrollment-invitation-token-prompt
+    - !Find [authentik_stages_prompt.prompt, [field_key, token]]
     validation_policies:
     - !KeyOf default-enrollment-validate-token-expression-policy
 
