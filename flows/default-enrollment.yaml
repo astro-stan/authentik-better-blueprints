@@ -83,6 +83,18 @@ entries:
     identifiers:
       name: User Write Stage - With Add To Group and Inactive on Creation
     required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Invitation Stage - Allow Without Invitation
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Invitation Stage - Deny Without Invitation
+    required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -99,13 +111,6 @@ entries:
     title: !Context title
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_invitation.invitationstage
-  id: default-enrollment-allow-no-invitation-invitation-stage
-  identifiers:
-    name: default-enrollment-allow-no-invitation-invitation-stage
-  attrs:
-    continue_flow_without_invitation: true
-
 - model: authentik_stages_prompt.promptstage
   id: default-enrollment-invitation-token-prompt-stage
   identifiers:
@@ -115,13 +120,6 @@ entries:
     - !Find [authentik_stages_prompt.prompt, [field_key, token]]
     validation_policies:
     - !Find [authentik_policies_expression.expressionpolicy, [name, validate-token-for-invitations-context-attribute-expression-policy]]
-
-- model: authentik_stages_invitation.invitationstage
-  id: default-enrollment-deny-without-invitation-invitation-stage
-  identifiers:
-    name: default-enrollment-deny-without-invitation-invitation-stage
-  attrs:
-    continue_flow_without_invitation: false
 
 - model: authentik_stages_prompt.promptstage
   id: default-enrollment-user-info-prompt-stage
@@ -142,7 +140,7 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-enrollment-allow-no-invitation-invitation-stage
+    stage: !Find [authentik_stages_invitation.invitationstage, [name, allow-without-invitation-invitation-stage]]
     target: !KeyOf flow
   attrs:
     order: 100
@@ -159,7 +157,7 @@ entries:
 - model: authentik_flows.flowstagebinding
   id: default-enrollment-invitation-deny-without-invitation-stage-binding
   identifiers:
-    stage: !KeyOf default-enrollment-deny-without-invitation-invitation-stage
+    stage: !Find [authentik_stages_invitation.invitationstage, [name, deny-without-invitation-invitation-stage]]
     target: !KeyOf flow
   attrs:
     order: 300
