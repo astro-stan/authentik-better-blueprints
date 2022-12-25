@@ -21,6 +21,12 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Expression Policy - Validate token For Invitations Context Attribute
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: Prompt - username With Duplicate Check
     required: true
 
@@ -75,24 +81,6 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_policies_expression.expressionpolicy
-  id: default-enrollment-validate-token-expression-policy
-  identifiers:
-    name: default-enrollment-validate-token-expression-policy
-  attrs:
-    expression:  |
-      from uuid import UUID
-
-      token = request.context.get("prompt_data", {}).get("token", "")
-      try:
-          if UUID(token).version == 4:
-              return True
-      except ValueError:
-          pass
-
-      ak_message('"' + str(token) + '"' + " is not a valid.")
-      return False
-
-- model: authentik_policies_expression.expressionpolicy
   id: default-enrollment-validate-invitation-is-in-effect-expression-policy
   identifiers:
     name: default-enrollment-validate-invitation-is-in-effect-expression-policy
@@ -126,7 +114,7 @@ entries:
     fields:
     - !Find [authentik_stages_prompt.prompt, [field_key, token]]
     validation_policies:
-    - !KeyOf default-enrollment-validate-token-expression-policy
+    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-token-for-invitations-context-attribute-expression-policy]]
 
 - model: authentik_stages_invitation.invitationstage
   id: default-enrollment-deny-without-invitation-invitation-stage
