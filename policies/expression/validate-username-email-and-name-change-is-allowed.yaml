@@ -1,0 +1,53 @@
+version: 1
+metadata:
+  name: Expression Policy - Validate Username Email and Name Change Is Allowed
+context: {}
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies_expression.expressionpolicy
+  id: validate-username-email-and-name-change-is-allowed-expression-policy
+  identifiers:
+    name: validate-username-email-and-name-change-is-allowed-expression-policy
+  attrs:
+    expression: |
+      from authentik.lib.config import CONFIG
+      from authentik.core.models import (
+          USER_ATTRIBUTE_CHANGE_EMAIL,
+          USER_ATTRIBUTE_CHANGE_NAME,
+          USER_ATTRIBUTE_CHANGE_USERNAME
+      )
+      prompt_data = request.context.get("prompt_data")
+
+      is_allowed = True
+
+      if not request.user.group_attributes(request.http_request).get(
+          USER_ATTRIBUTE_CHANGE_EMAIL, CONFIG.y_bool("default_user_change_email", True)
+      ):
+          if prompt_data.get("email") != request.user.email:
+              ak_message("Not allowed to change email address.")
+              is_allowed = False
+
+      if not request.user.group_attributes(request.http_request).get(
+          USER_ATTRIBUTE_CHANGE_NAME, CONFIG.y_bool("default_user_change_name", True)
+      ):
+          if prompt_data.get("name") != request.user.name:
+              ak_message("Not allowed to change name.")
+              is_allowed = False
+
+      if not request.user.group_attributes(request.http_request).get(
+          USER_ATTRIBUTE_CHANGE_USERNAME, CONFIG.y_bool("default_user_change_username", True)
+      ):
+          if prompt_data.get("username") != request.user.username:
+              ak_message("Not allowed to change username.")
+              is_allowed = False
+
+      return is_allowed
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

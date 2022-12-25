@@ -57,6 +57,12 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
+      name: Expression Policy - Validate Username Email and Name Change Is Allowed
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
       name: Email Stage - Default Confirmation
     required: true
 
@@ -68,42 +74,6 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_policies_expression.expressionpolicy
-  id: default-user-settings-authorize-user-attribute-edit-expression-policy
-  identifiers:
-    name: default-user-settings-authorize-user-attribute-edit-expression-policy
-  attrs:
-    expression:  |
-      from authentik.lib.config import CONFIG
-      from authentik.core.models import (
-          USER_ATTRIBUTE_CHANGE_EMAIL,
-          USER_ATTRIBUTE_CHANGE_NAME,
-          USER_ATTRIBUTE_CHANGE_USERNAME
-      )
-      prompt_data = request.context.get("prompt_data")
-
-      if not request.user.group_attributes(request.http_request).get(
-          USER_ATTRIBUTE_CHANGE_EMAIL, CONFIG.y_bool("default_user_change_email", True)
-      ):
-          if prompt_data.get("email") != request.user.email:
-              ak_message("Not allowed to change email address.")
-              return False
-
-      if not request.user.group_attributes(request.http_request).get(
-          USER_ATTRIBUTE_CHANGE_NAME, CONFIG.y_bool("default_user_change_name", True)
-      ):
-          if prompt_data.get("name") != request.user.name:
-              ak_message("Not allowed to change name.")
-              return False
-
-      if not request.user.group_attributes(request.http_request).get(
-          USER_ATTRIBUTE_CHANGE_USERNAME, CONFIG.y_bool("default_user_change_username", True)
-      ):
-          if prompt_data.get("username") != request.user.username:
-              ak_message("Not allowed to change username.")
-              return False
-
-      return True
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flow
   id: flow
@@ -129,7 +99,7 @@ entries:
     - !Find [authentik_stages_prompt.prompt, [field_key, email]]
     - !Find [authentik_stages_prompt.prompt, [field_key, attributes.settings.locale]]
     validation_policies:
-    - !KeyOf default-user-settings-authorize-user-attribute-edit-expression-policy
+    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-username-email-and-name-change-is-allowed-expression-policy]]
     - !Find [authentik_policies_expression.expressionpolicy, [name, create-name-context-attribute-from-first_name-and-last_name-context-attributes-expression-policy]]
     - !Find [authentik_policies_expression.expressionpolicy, [name, validate-username-context-attribute-is-unique-to-current-user-expression-policy]]
     - !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-unique-to-current-user-expression-policy]]
