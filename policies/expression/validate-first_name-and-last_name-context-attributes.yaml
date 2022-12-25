@@ -18,6 +18,7 @@ entries:
     name: validate-first_name-and-last_name-context-attributes-expression-policy
   attrs:
     expression:  |
+      from re import compile
       from authentik.lib.config import CONFIG
 
       # If request.user == AnonymousUser these will be taken from the DEFAULT
@@ -41,10 +42,12 @@ entries:
           )
       )
 
+      regex = compile(str(regex))
+
       result = ak_call_policy(
           "validate-generic-prompt-field-data-expression-policy",
-          regex=regex,
-          fields=("first_name", "last_name"),
+          _validator=lambda x: regex_match(str(x), regex),
+          _fields=("first_name", "last_name"),
       )
 
       if not result.passing and err_msg:

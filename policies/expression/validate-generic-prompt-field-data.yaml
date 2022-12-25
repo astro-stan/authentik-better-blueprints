@@ -18,27 +18,23 @@ entries:
       # If any of the specied fields fail validation the policy returns `False`.
       #
       # It requires the following extra keys to be present in `request.context`:
-      # - regex: str
-      #   The regex against which to match all fields
-      # - fields: Union[List[str], Tuple[str, ...]]
+      # - _validator: Callable[[Any], bool]
+      #   A callable to use to validate all fields
+      # - _fields: Union[List[str], Tuple[str, ...]]
       #   The keys of the fields in `request.context["prompt_data"]` which should
-      #   be matched against the regex
-      from re import compile
-
-      regex = request.context.get("regex")
-      fields = request.context.get("fields")
+      #   be validated
+      validator = request.context.get("_validator")
+      fields = request.context.get("_fields")
       prompt_data = request.context.get("prompt_data")
 
       error = False
 
-      if regex is None:
+      if validator is None:
           ak_logger.warning(
-              "Regex was not provided in context",
+              "Validator was not provided in context",
               context=request.context,
           )
           error = True
-      else:
-          regex = compile(str(regex))
 
       if prompt_data is None:
           ak_logger.warning(
@@ -46,6 +42,7 @@ entries:
               context=request.context,
           )
           error = True
+
       if not isinstance(fields, (tuple, list)) or not len(fields):
           ak_logger.warning(
               "No field keys were provided in context",
@@ -66,7 +63,7 @@ entries:
           return False
 
       for field in fields:
-          if not regex_match(str(prompt_data[field]), regex):
+          if not validator(prompt_data[field]):
               return False
 
       return True
