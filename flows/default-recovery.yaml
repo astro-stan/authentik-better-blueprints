@@ -4,9 +4,14 @@ metadata:
 context:
   name: Welcome to authentik!
   title: Welcome to authentik!
-  show_matched_user: false
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Identification Stage - Recovery
+    required: true
+
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
@@ -46,19 +51,10 @@ entries:
     title: !Context title
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_identification.identificationstage
-  id: default-recovery-identification-stage
-  identifiers:
-    name: default-recovery-identification-stage
-  attrs:
-    user_fields:
-    - email
-    - username
-    show_matched_user: !Context show_matched_user
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-recovery-identification-stage
+    stage: !Find [authentik_stages_identification.identificationstage, [name, recovery-identification-stage]]
     target: !KeyOf flow
   attrs:
     order: 100
