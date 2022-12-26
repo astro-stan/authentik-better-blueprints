@@ -9,49 +9,31 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - first_name and last_name
+      name: Invitation Stage - Allow Without Invitation
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Create name Context Attribute From first_name and last_name Context Attributes
+      name: Prompt Stage - Invitation Token
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Validate Invitation in Effect
+      name: Invitation Stage - Deny Without Invitation
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - username With Duplicate Check
+      name: Prompt Stage - Enrollment
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - password and password_repeat
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Prompt - email
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Expression Policy - Validate email Context Attribute Is Unique
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Password Policy - Default
+      name: User Write Stage - With Add To Group and Inactive on Creation
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -69,25 +51,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: User Write Stage - With Add To Group and Inactive on Creation
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Invitation Stage - Allow Without Invitation
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Invitation Stage - Deny Without Invitation
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Prompt Stage - Invitation Token
+      name: Expression Policy - Validate Invitation in Effect
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -105,22 +69,6 @@ entries:
     title: !Context title
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_prompt.promptstage
-  id: default-enrollment-user-info-prompt-stage
-  identifiers:
-    name: default-enrollment-user-info-prompt-stage
-  attrs:
-    fields:
-    - !Find [authentik_stages_prompt.prompt, [field_key, first_name]]
-    - !Find [authentik_stages_prompt.prompt, [field_key, last_name]]
-    - !Find [authentik_stages_prompt.prompt, [field_key, email]]
-    - !Find [authentik_stages_prompt.prompt, [field_key, username], [type, username]]
-    - !Find [authentik_stages_prompt.prompt, [field_key, password]]
-    - !Find [authentik_stages_prompt.prompt, [field_key, password_repeat]]
-    validation_policies:
-    - !Find [authentik_policies_expression.expressionpolicy, [name, create-name-context-attribute-from-first_name-and-last_name-context-attributes-expression-policy]]
-    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-unique-expression-policy]]
-    - !Find [authentik_policies_password.passwordpolicy, [name, default-password-policy]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
@@ -149,7 +97,7 @@ entries:
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-enrollment-user-info-prompt-stage
+    stage: !Find [authentik_stages_prompt.promptstage, [name, enrollment-prompt-stage]]
     target: !KeyOf flow
   attrs:
     order: 400
