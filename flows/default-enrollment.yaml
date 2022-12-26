@@ -21,12 +21,6 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Expression Policy - Validate token For Invitations Context Attribute
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
       name: Expression Policy - Validate Invitation in Effect
     required: true
 
@@ -46,12 +40,6 @@ entries:
   attrs:
     identifiers:
       name: Prompt - email
-    required: true
-
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Prompt - token For Invitations
     required: true
 
 - model: authentik_blueprints.metaapplyblueprint
@@ -95,6 +83,12 @@ entries:
     identifiers:
       name: Invitation Stage - Deny Without Invitation
     required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Prompt Stage - Invitation Token
+    required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -111,16 +105,6 @@ entries:
     title: !Context title
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_prompt.promptstage
-  id: default-enrollment-invitation-token-prompt-stage
-  identifiers:
-    name: default-enrollment-invitation-token-prompt-stage
-  attrs:
-    fields:
-    - !Find [authentik_stages_prompt.prompt, [field_key, token]]
-    validation_policies:
-    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-token-for-invitations-context-attribute-expression-policy]]
-
 - model: authentik_stages_prompt.promptstage
   id: default-enrollment-user-info-prompt-stage
   identifiers:
@@ -148,7 +132,7 @@ entries:
 - model: authentik_flows.flowstagebinding
   id: default-enrollment-invitation-token-prompt-stage-binding
   identifiers:
-    stage: !KeyOf default-enrollment-invitation-token-prompt-stage
+    stage: !Find [authentik_stages_prompt.promptstage, [name, invitation-token-prompt-stage]]
     target: !KeyOf flow
   attrs:
     order: 200
