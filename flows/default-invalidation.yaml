@@ -9,7 +9,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Prompt - Logout Confirmation Dummy
+      name: Prompt Stage - Logout
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -27,14 +27,6 @@ entries:
     title: !Context title
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_stages_prompt.promptstage
-  id: default-invalidation-logout-dummy-prompt-stage
-  identifiers:
-    name: default-invalidation-logout-dummy-prompt-stage
-  attrs:
-    fields:
-    - !Find [authentik_stages_prompt.prompt, [field_key, _logout_confirmation_dummy]]
-
 - model: authentik_stages_user_logout.userlogoutstage
   id: default-invalidation-logout-stage
   identifiers:
@@ -42,7 +34,7 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-invalidation-logout-dummy-prompt-stage
+    stage: !Find [authentik_stages_prompt.promptstage, [name, logout-prompt-stage]]
     target: !KeyOf flow
   attrs:
     order: 100
