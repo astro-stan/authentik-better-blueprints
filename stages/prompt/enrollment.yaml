@@ -43,7 +43,7 @@ entries:
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Password Policy - Default
+      name: Expression Policy - Validate Password
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -66,7 +66,7 @@ entries:
     validation_policies:
     - !Find [authentik_policies_expression.expressionpolicy, [name, create-name-context-attribute-from-first_name-and-last_name-context-attributes-expression-policy]]
     - !Find [authentik_policies_expression.expressionpolicy, [name, validate-email-context-attribute-is-unique-expression-policy]]
-    - !Find [authentik_policies_password.passwordpolicy, [name, default-password-policy]]
+    - !Find [authentik_policies_expression.expressionpolicy, [name, validate-password-expression-policy]]
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
