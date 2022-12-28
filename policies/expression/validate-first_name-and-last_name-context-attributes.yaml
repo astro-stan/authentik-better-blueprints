@@ -24,20 +24,20 @@ entries:
       # If request.user == AnonymousUser these will be taken from the DEFAULT
       # tenant. If no default tenant is present it will fall back to the
       # defaults set in this expression policy
-      USER_ATTRIBUTE_NAME_REGEX = "better-blueprints/user/name-regex"
-      USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE = "better-blueprints/user/name-validation-error-message"
+      USER_ATTRIBUTE_NAME_REGEX = "better-blueprints/users/name-regex"
+      USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE = "better-blueprints/users/name-validation-error-message"
 
       regex = request.user.group_attributes(request.http_request).get(
           USER_ATTRIBUTE_NAME_REGEX,
           CONFIG.y(
-              "better_blueprints_default.user.name_regex", # ENV: AUTHENTIK_BETTER_BLUEPRINTS_DEFAULT__USER__NAME_REGEX
+              "better_blueprints_default.users.name_regex", # ENV: AUTHENTIK_BETTER_BLUEPRINTS_DEFAULT__USERS__NAME_REGEX
               "^[a-zA-Z]{2,20}$"
           )
       )
       err_msg = request.user.group_attributes(request.http_request).get(
           USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE,
           CONFIG.y(
-              "better_blueprints_default.user.name_validation_error_message", # ENV: AUTHENTIK_BETTER_BLUEPRINTS_DEFAULT__USER__NAME_VALIDATION_ERROR_MESSAGE
+              "better_blueprints_default.users.name_validation_error_message", # ENV: AUTHENTIK_BETTER_BLUEPRINTS_DEFAULT__USERS__NAME_VALIDATION_ERROR_MESSAGE
               "Names must contain only alphabetic characters and be between 2 and 20 characters long"
           )
       )
