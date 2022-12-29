@@ -6,9 +6,9 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_events.notificationtransport
-  id: default-local-transport
+  id: default-local-notification-transport
   identifiers:
-    name: default-local-transport
+    name: default-local-notification-transport
   attrs:
     mode: local
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

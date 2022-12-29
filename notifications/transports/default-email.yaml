@@ -6,9 +6,9 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_events.notificationtransport
-  id: default-email-transport
+  id: default-email-notification-transport
   identifiers:
-    name: default-email-transport
+    name: default-email-notification-transport
   attrs:
     mode: email
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
