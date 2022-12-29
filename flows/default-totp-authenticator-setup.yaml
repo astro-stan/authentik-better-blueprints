@@ -5,9 +5,12 @@ context:
   digits: 6
   name: Configure TOTP Authenticator
   title: Configure TOTP Authenticator
+  validate_current_password: true
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context validate_current_password
   attrs:
     identifiers:
       name: Prompt Stage - Current Password
@@ -37,6 +40,7 @@ entries:
     configure_flow: !KeyOf flow
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
+  state: !If [!Context validate_current_password, present, absent]
   identifiers:
     stage: !Find [authentik_stages_prompt.promptstage, [name, current-password-prompt-stage]]
     target: !KeyOf flow
