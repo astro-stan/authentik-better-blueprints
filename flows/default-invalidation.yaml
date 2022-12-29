@@ -4,9 +4,12 @@ metadata:
 context:
   name: Logout
   title: Logout
+  require_confirmation: true
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context require_confirmation
   attrs:
     identifiers:
       name: Prompt Stage - Logout
@@ -35,6 +38,7 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_flows.flowstagebinding
+  state: !If [!Context require_confirmation, present, absent]
   identifiers:
     stage: !Find [authentik_stages_prompt.promptstage, [name, logout-prompt-stage]]
     target: !KeyOf flow
