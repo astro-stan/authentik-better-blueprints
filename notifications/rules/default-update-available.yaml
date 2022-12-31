@@ -1,0 +1,83 @@
+version: 1
+metadata:
+  name: Notification Rule - Default Update Available
+context:
+  severity: alert
+  group_name: null
+  notify_email: true
+  notify_local: true
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context notify_email
+  attrs:
+    identifiers:
+      name: Notification Transport - Default Email
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  conditions:
+  - !Context notify_local
+  attrs:
+    identifiers:
+      name: Notification Transport - Default Local
+    required: true
+
+- model: authentik_blueprints.metaapplyblueprint
+  attrs:
+    identifiers:
+      name: Event Matcher Policy - Default Update Available
+    required: true
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_events.notificationrule
+  id: default-update-available-notification-rule
+  identifiers:
+    name: default-update-available-notification-rule
+  attrs:
+    severity: !Context severity
+    group: !If [
+      !Condition [OR, !Context notify_email, !Context notify_local],
+      !If [
+        !Context group_name,
+        !Find [authentik_core.group, [name, !Context group_name]],
+        !Find [authentik_core.group, [attributes__contains, {better-blueprints/id: default-admins-group}]]
+      ],
+      null
+    ]
+    transports: !If [
+      !Condition [AND, !Context notify_email, !Context notify_local],
+      [
+        !Find [authentik_events.notificationtransport, [name, default-email-notification-transport]],
+        !Find [authentik_events.notificationtransport, [name, default-local-notification-transport]]
+      ],
+      !If [
+        !Context notify_email,
+        [
+          !Find [authentik_events.notificationtransport, [name, default-email-notification-transport]]
+        ],
+        !If [
+          !Context notify_local,
+          [
+            !Find [authentik_events.notificationtransport, [name, default-local-notification-transport]]
+          ],
+          []
+        ]
+      ]
+    ]
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+- model: authentik_policies.policybinding
+  identifiers:
+    policy: !Find [authentik_policies_event_matcher.eventmatcherpolicy, [name, default-update-available-event-matcher-policy]]
+    target: !KeyOf default-update-available-notification-rule
+  attrs:
+    order: 100
+    enabled: true
+    timeout: 30
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
