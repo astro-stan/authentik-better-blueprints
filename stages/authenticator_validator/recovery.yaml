@@ -2,7 +2,6 @@ version: 1
 metadata:
   name: Authenticator Validator Stage - Recovery
 context:
-  token_count: 1
   device_classes_map: # class_type: stage_name
     static: default-static-authenticator-setup-stage
 entries:
@@ -24,7 +23,6 @@ entries:
     name: recovery-authenticator-validator-stage
   attrs:
     not_configured_action: deny
-    token_count: !Context token_count
     configuration_stages: !Enumerate [
       !Context device_classes_map,
       SEQ,
