@@ -3,13 +3,13 @@ metadata:
   name: Authenticator Validator Stage - Recovery
 context:
   device_classes_map: # class_type: stage_name
-    static: default-static-authenticator-setup-stage
+    static: default-recovery-authenticator-setup-stage
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_blueprints.metaapplyblueprint
   attrs:
     identifiers:
-      name: Flow - Default Static Authenticator Setup
+      name: Flow - Default Recovery Authenticator Setup
     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

@@ -1,10 +1,10 @@
 version: 1
 metadata:
-  name: Flow - Default Static Authenticator Setup
+  name: Flow - Default Recovery Authenticator Setup
 context:
   token_count: 1
-  name: Configure Static Authenticator
-  title: Configure Static Authenticator
+  name: Configure Recovery Authenticator
+  title: Configure Recovery Authenticator
   validate_current_password: true
 entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Dependency blueprints ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -22,7 +22,7 @@ entries:
 - model: authentik_flows.flow
   id: flow
   identifiers:
-    slug: default-static-authenticator-setup-flow
+    slug: default-recovery-authenticator-setup-flow
   attrs:
     authentication: require_authenticated
     denied_action: continue
@@ -32,9 +32,9 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_stages_authenticator_static.authenticatorstaticstage
-  id: default-static-authenticator-setup-stage
+  id: default-recovery-authenticator-setup-stage
   identifiers:
-    name: default-static-authenticator-setup-stage
+    name: default-recovery-authenticator-setup-stage
   attrs:
     token_count: !Context token_count
     configure_flow: !KeyOf flow
@@ -49,7 +49,7 @@ entries:
 
 - model: authentik_flows.flowstagebinding
   identifiers:
-    stage: !KeyOf default-static-authenticator-setup-stage
+    stage: !KeyOf default-recovery-authenticator-setup-stage
     target: !KeyOf flow
   attrs:
     order: 200
