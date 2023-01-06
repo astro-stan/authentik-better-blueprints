@@ -16,11 +16,11 @@ entries:
       name: Prompt Stage - Current Password
     required: true
 
-- model: authentik_blueprints.metaapplyblueprint
-  attrs:
-    identifiers:
-      name: Flow - Default Recovery Authenticator Setup
-    required: true
+# - model: authentik_blueprints.metaapplyblueprint
+#   attrs:
+#     identifiers:
+#       name: Flow - Default Recovery Authenticator Setup
+#     required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -60,11 +60,11 @@ entries:
   attrs:
     order: 200
 
-- model: authentik_flows.flowstagebinding
-  identifiers:
-    stage: !Find [authentik_stages_authenticator_static.authenticatorstaticstage, [name, default-recovery-authenticator-setup-stage]]
-    target: !KeyOf flow
-  attrs:
-    order: 300
+# - model: authentik_flows.flowstagebinding
+#   identifiers:
+#     stage: !Find [authentik_stages_authenticator_static.authenticatorstaticstage, [name, default-recovery-authenticator-setup-stage]]
+#     target: !KeyOf flow
+#   attrs:
+#     order: 300
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
