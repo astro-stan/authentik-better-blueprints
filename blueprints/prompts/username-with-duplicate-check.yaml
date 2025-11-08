@@ -17,6 +17,7 @@ entries:
       label: Username
       type: username
   attrs:
+      name: username-with-duplicate-check
       order: !Context order
       placeholder: Username
       required: true

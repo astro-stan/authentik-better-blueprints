@@ -17,6 +17,7 @@ entries:
     field_key: first_name
     label: First name
   attrs:
+    name: first_name
     order: !Context first_name_order
     placeholder: |
       try:
@@ -33,6 +34,7 @@ entries:
     field_key: last_name
     label: Last name
   attrs:
+    name: last_name
     order: !Context last_name_order
     placeholder: |
       try:

@@ -17,6 +17,7 @@ entries:
       label: Username
       type: text
   attrs:
+      name: username-without-duplicate-check
       order: !Context order
       placeholder: |
         try:

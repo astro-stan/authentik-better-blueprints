@@ -5,7 +5,7 @@ context:
   subject: authentik
   template: email/account_confirmation.html
   from_address: system@authentik.local
-  token_expiry: 30
+  token_expiry: minutes=30
   use_global_settings: true
   host: localhost
   port: 25

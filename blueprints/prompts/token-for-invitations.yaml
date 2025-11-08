@@ -16,6 +16,7 @@ entries:
   identifiers:
     field_key: token
   attrs:
+    name: token
     order: !Context order
     label: !Context label
     placeholder: !Context label

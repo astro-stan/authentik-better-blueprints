@@ -16,6 +16,7 @@ entries:
     field_key: attributes.settings.locale
     label: Locale
   attrs:
+    name: attributes.settings.locale
     order: !Context order
     placeholder: |
       try:

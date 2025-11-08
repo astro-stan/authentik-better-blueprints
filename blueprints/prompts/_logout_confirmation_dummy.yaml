@@ -16,6 +16,7 @@ entries:
   identifiers:
     field_key: _logout_confirmation_dummy
   attrs:
+    name: _logout_confirmation_dummy
     order: !Context order
     label: !Context label
     placeholder: !Context label

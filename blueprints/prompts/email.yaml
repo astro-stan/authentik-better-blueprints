@@ -16,6 +16,7 @@ entries:
     field_key: email
     label: Email
   attrs:
+    name: email
     order: !Context order
     placeholder: |
       try:

@@ -1,6 +1,6 @@
 version: 1
 metadata:
-  name: Tenant - Default
+  name: Brand - Default
 context:
     fqdn: authentik - default
     branding_title: authentik
@@ -31,10 +31,11 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policy bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-- model: authentik_tenants.tenant
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ brands ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+- model: authentik_brands.brand
   identifiers:
-    default: True
+    default: False
   attrs:
     domain: !Context fqdn
     branding_title: !Context branding_title
