@@ -29,14 +29,14 @@ entries:
 
       regex = request.user.group_attributes(request.http_request).get(
           USER_ATTRIBUTE_NAME_REGEX,
-          CONFIG.y(
+          CONFIG.get(
               "better_blueprints_default.users.name_regex", # ENV: AUTHENTIK_BETTER_BLUEPRINTS_DEFAULT__USERS__NAME_REGEX
               "^[a-zA-Z]{2,20}$"
           )
       )
       err_msg = request.user.group_attributes(request.http_request).get(
           USER_ATTRIBUTE_NAME_VALIDATION_ERROR_MESSAGE,
-          CONFIG.y(
+          CONFIG.get(
               "better_blueprints_default.users.name_validation_error_message", # ENV: AUTHENTIK_BETTER_BLUEPRINTS_DEFAULT__USERS__NAME_VALIDATION_ERROR_MESSAGE
               "Names must contain only alphabetic characters and be between 2 and 20 characters long"
           )
