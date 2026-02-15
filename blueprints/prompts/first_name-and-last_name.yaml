@@ -19,12 +19,13 @@ entries:
   attrs:
     name: first_name
     order: !Context first_name_order
-    placeholder: |
-      try:
+    initial_value: |
+      if not user.is_anonymous:
           return user.name.split(" ")[0]
-      except:
-          return 'First name'
-    placeholder_expression: true
+      return ''
+    initial_value_expression: true
+    placeholder: First name
+    placeholder_expression: false
     required: true
     type: text
 
@@ -36,12 +37,13 @@ entries:
   attrs:
     name: last_name
     order: !Context last_name_order
-    placeholder: |
-      try:
+    initial_value: |
+      if not user.is_anonymous:
           return user.name.split(" ")[-1]
-      except:
-          return 'Last name'
-    placeholder_expression: true
+      return ''
+    initial_value_expression: true
+    placeholder: Last name
+    placeholder_expression: false
     required: true
     type: text
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

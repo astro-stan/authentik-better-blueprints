@@ -18,12 +18,13 @@ entries:
   attrs:
     name: email
     order: !Context order
-    placeholder: |
-      try:
+    initial_value: |
+      if not user.is_anonymous:
           return user.email
-      except:
-          return 'Email'
-    placeholder_expression: true
+      return ""
+    initial_value_expression: true
+    placeholder: Email
+    placeholder_expression: false
     required: true
     type: email
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

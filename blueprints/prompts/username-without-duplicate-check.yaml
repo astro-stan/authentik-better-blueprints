@@ -19,12 +19,13 @@ entries:
   attrs:
       name: username-without-duplicate-check
       order: !Context order
-      placeholder: |
-        try:
+      initial_value: |
+        if not user.is_anonymous:
             return user.username
-        except:
-            return 'Username'
-      placeholder_expression: true
+        return ''
+      initial_value_expression: true
+      placeholder: Username
+      placeholder_expression: false
       required: true
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stage bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
