@@ -139,23 +139,23 @@ entries:
   conditions:
   - !Context require_invitation
   identifiers:
-    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-invitation-in-effect-expression-policy]]
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-invitation-token-missing-expression-policy]]
     target: !KeyOf default-enrollment-invitation-token-prompt-stage-binding
   attrs:
     order: 0
     enabled: true
-    negate: true
+    negate: false
     timeout: 30
 
 - model: authentik_policies.policybinding
   conditions:
   - !Context require_invitation
   identifiers:
-    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-invitation-in-effect-expression-policy]]
+    policy: !Find [authentik_policies_expression.expressionpolicy, [name, validate-invitation-token-missing-expression-policy]]
     target: !KeyOf default-enrollment-invitation-deny-without-invitation-stage-binding
   attrs:
     order: 0
     enabled: true
-    negate: true
+    negate: false
     timeout: 30
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Tenants ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#

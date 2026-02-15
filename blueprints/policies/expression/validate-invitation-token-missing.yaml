@@ -8,11 +8,26 @@ entries:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Groups ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 - model: authentik_policies_expression.expressionpolicy
-  id: validate-invitation-in-effect-expression-policy
+  id: validate-invitation-token-missing-expression-policy
   identifiers:
-    name: validate-invitation-in-effect-expression-policy
+    name: validate-invitation-token-missing-expression-policy
   attrs:
-    expression: return request.context.get("invitation_in_effect", False)
+    expression: |
+      try:
+        from authentik.flows.views.executor import SESSION_KEY_GET
+        from authentik.stages.invitation.stage import QS_INVITATION_TOKEN_KEY, PLAN_CONTEXT_INVITATION_TOKEN
+
+        session_dict = request.http_request.session.get(SESSION_KEY_GET, {})
+
+        token = session_dict.get(
+            QS_INVITATION_TOKEN_KEY,
+            session_dict.get(
+                PLAN_CONTEXT_INVITATION_TOKEN,
+                request.context.get("token", None)))
+
+        return not bool(token)
+      except:
+        return True
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
