@@ -1,0 +1,1464 @@
+version: 1
+metadata:
+  name: ABB - Bootstrap
+context:
+  global.uninstall: false
+  # TODO: Add more fallbacks when
+  # https://github.com/goauthentik/authentik/pull/20610 is merged
+  # Must not be changed after first install and must be a valid domain name
+  global.domain: !Env [AUTHENTIK_HOST_BROWSER, example.com]
+  # The bootstrap blueprint instance namespace. Used to prefix all created models.
+  # Must not be changed after first install and must be sluggable
+  global.namespace: main
+  # Whether to set the brand created by this blueprint as default.
+  # Note: blueprint will fail if another brand is already set as default
+  global.default: false
+  global.title: !Context [global.domain, ABB - Bootstrap] # The brand title
+  # TODO: Due to a bug this must be kept turned on. See:
+  # https://github.com/goauthentik/authentik/issues/20456
+  global.email.require_confirmation_when_changed: true
+  global.email.confirmation.subject: !Format ["%s - Confirm your email", !Context [global.domain, Authentik]]
+  global.email.token_expiration: minutes=30
+  global.passwords.min_length: 8
+  global.passwords.require_lowercase: true
+  global.passwords.require_uppercase: true
+  global.passwords.require_digit: true
+  global.passwords.require_special_character: false
+  global.passwords.prevent_weak_passwords: true
+  global.passwords.prevent_compromised_passwords: true
+  authentication.name: !Format ["Login to %s", !Context [global.domain, Authentik]]
+  authentication.title: !Format ["Login to %s", !Context [global.domain, Authentik]]
+  authentication.user_fields:
+    - email
+    - username
+    # - upn
+  authentication.show_matched_user: true
+  authentication.show_password_on_separate_stage: true
+  authentication.backends:
+    - authentik.core.auth.InbuiltBackend
+    # - authentik.sources.ldap.auth.LDAPBackend
+    # - authentik.core.auth.TokenBackend
+  authentication.session_duration: seconds=0
+  invalidation.name: !Format ["Logout from %s", !Context [global.domain, Authentik]]
+  invalidation.title: !Format ["Logout from %s", !Context [global.domain, Authentik]]
+  invalidation.require_confirmation: true
+  password_change.name: Change password
+  password_change.title: Change password
+  password_change.validate_current_password: true
+  enrollment.name: !Format ["Create a %s account", !Context [global.domain, Authentik]]
+  enrollment.title: !Format ["Create a %s account", !Context [global.domain, Authentik]]
+  enrollment.enabled: true
+  enrollment.require_invitation: true
+  enrollment.create_users_as_external: true
+  enrollment.create_users_as_inactive: false
+  recovery.name: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
+  recovery.title: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
+  recovery.email.subject: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
+  recovery.enabled: true
+  user_settings.name: !Format ["Update your %s account", !Context [global.domain, Authentik]]
+  user_settings.title: !Format ["Update your %s account", !Context [global.domain, Authentik]]
+  prompts.email.position: 10
+  prompts.username.position: 20
+  prompts.first_name.position: 30
+  prompts.last_name.position: 40
+  prompts.locale.position: 50
+  prompts.password.position: 60
+  prompts.password_repeat.position: 70
+  # TODO: Due to a bug all notification transport methods must all either enabled
+  # or disabled. If some are enabled and some not - the blueprint will fail. See:
+  # https://github.com/goauthentik/authentik/issues/20449
+  notifications.configuration_error.transports.email: true
+  notifications.configuration_error.transports.ui: true
+  notifications.configuration_error.severity: alert
+  notifications.configuration_error.notification_group: authentik Admins
+entries:
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prompts ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_stages_prompt.prompt
+    id: username-prompt
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-username-prompt", !Context global.namespace]
+      type: username
+    attrs:
+      field_key: username
+      label: Username
+      placeholder: Username
+      placeholder_expression: false
+      initial_value: |
+        if user.is_anonymous:
+          return ''
+        return user.username
+      initial_value_expression: true
+      required: true
+      order: !Context prompts.username.position
+  - model: authentik_stages_prompt.prompt
+    id: email-prompt
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-email-prompt", !Context global.namespace]
+      type: email
+    attrs:
+      field_key: email
+      label: Email
+      placeholder: Email
+      placeholder_expression: false
+      initial_value: |
+        if user.is_anonymous:
+          return ''
+        return user.email
+      initial_value_expression: true
+      required: true
+      order: !Context prompts.email.position
+  - model: authentik_stages_prompt.prompt
+    id: first-name-prompt
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-first-name-prompt", !Context global.namespace]
+      type: text
+    attrs:
+      field_key: first_name
+      label: First name
+      placeholder: First name
+      placeholder_expression: false
+      initial_value: |
+        if user.is_anonymous:
+          return ''
+        return user.name.split(" ")[0]
+      initial_value_expression: true
+      required: true
+      order: !Context prompts.first_name.position
+  - model: authentik_stages_prompt.prompt
+    id: last-name-prompt
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-last-name-prompt", !Context global.namespace]
+      type: text
+    attrs:
+      field_key: last_name
+      label: Last name
+      placeholder: Last name
+      placeholder_expression: false
+      initial_value: |
+        if user.is_anonymous:
+          return ''
+        return user.name.split(" ")[-1]
+      initial_value_expression: true
+      required: true
+      order: !Context prompts.last_name.position
+  - model: authentik_stages_prompt.prompt
+    id: locale-prompt
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-locale-prompt", !Context global.namespace]
+      type: ak-locale
+    attrs:
+      field_key: attributes.settings.locale
+      label: Locale
+      placeholder: Locale
+      placeholder_expression: false
+      initial_value: |
+        if user.is_anonymous:
+          return ""
+        return user.attributes.get("settings", {}).get("locale", "")
+      initial_value_expression: true
+      required: true
+      order: !Context prompts.locale.position
+  - model: authentik_stages_prompt.prompt
+    id: password-prompt
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-password-prompt", !Context global.namespace]
+      type: password
+    attrs:
+      field_key: password
+      label: Password
+      placeholder: Password
+      placeholder_expression: false
+      initial_value: ""
+      initial_value_expression: false
+      required: true
+      order: !Context prompts.password.position
+  - model: authentik_stages_prompt.prompt
+    id: password-repeat-prompt
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-password-repeat-prompt", !Context global.namespace]
+      type: password
+    attrs:
+      field_key: password_repeat
+      label: Password (repeat)
+      placeholder: Password (repeat)
+      placeholder_expression: false
+      initial_value: ""
+      initial_value_expression: false
+      required: true
+      order: !Context prompts.password_repeat.position
+  - model: authentik_stages_prompt.prompt
+    id: logout-confirmation-prompt
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context invalidation.require_confirmation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-logout-confirmation-prompt", !Context global.namespace]
+      type: static
+    attrs:
+      field_key: logout_confirmation
+      label: "Are you sure you want to log out?"
+      placeholder_value: ""
+      placeholder_value_expression: false
+      initial_value: ""
+      initial_value_expression: false
+      required: true
+      order: 0
+  - model: authentik_stages_prompt.prompt
+    id: invitation-token-prompt
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled,
+                            !Context enrollment.require_invitation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-invitation-token-prompt", !Context global.namespace]
+      type: text
+    attrs:
+      # Must be named `token` for the invitation stage to pick it up
+      field_key: token
+      label: Invitaiton ID
+      placeholder_value: Invitaiton ID
+      placeholder_value_expression: false
+      initial_value: ""
+      initial_value_expression: false
+      required: true
+      order: 0
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_policies_expression.expressionpolicy
+    id: missing-invitation-token-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled,
+                            !Context enrollment.require_invitation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-missing-invitation-token-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        try:
+          from authentik.flows.views.executor import SESSION_KEY_GET
+          from authentik.stages.invitation.stage import QS_INVITATION_TOKEN_KEY, PLAN_CONTEXT_INVITATION_TOKEN
+
+          session_dict = request.http_request.session.get(SESSION_KEY_GET, {})
+
+          token = session_dict.get(
+              QS_INVITATION_TOKEN_KEY,
+              session_dict.get(
+                  PLAN_CONTEXT_INVITATION_TOKEN,
+                  request.context.get("token", None)))
+
+          return not bool(token)
+        except:
+          return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: valid-invitation-token-prompt-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled,
+                            !Context enrollment.require_invitation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-valid-invitation-token-prompt-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        is_valid = False
+
+        try:
+          from uuid import UUID
+          token = request.context["prompt_data"]["token"]
+          is_valid = UUID(str(token)).version == 4
+        except:
+          pass
+
+        if not is_valid:
+          ak_message("Invalid invitation ID")
+        return is_valid
+  - model: authentik_policies_expression.expressionpolicy
+    id: unique-email-expression-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-unique-email-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        email = request.context["prompt_data"]["email"]
+        existing_user = ak_user_by(email=email)
+        current_user = request.user
+
+        if existing_user and (current_user.is_anonymous or current_user != existing_user):
+          ak_message("This email is already in use.")
+          return False
+        return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: valid-name-parts-expression-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-valid-name-parts-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        from authentik.stages.prompt.models import Prompt
+
+        errors = False
+        for key, value in request.context["prompt_data"].items():
+          if key.endswith("name") and isinstance(value, (str,)):
+            prompt = Prompt.objects.filter(field_key=key).first()
+            label = prompt.label if prompt else key
+            if len(value) < 2:
+              ak_message(f"{label} must be longer than 1 character")
+              errors = True
+
+        return not errors
+  - model: authentik_policies_expression.expressionpolicy
+    id: valid-username-expression-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-valid-username-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        username = request.context["prompt_data"]["username"]
+        match = regex_match(username, r"^[a-zA-Z][a-zA-Z0-9-_]{0,18}[a-zA-Z0-9]$")
+
+        if not match:
+          ak_message("Invalid username. Use 2-20 characters (a-Z, 0-9, -, _). Must start with a letter and end with a letter or number.")
+        return match
+  - model: authentik_policies_expression.expressionpolicy
+    id: strip-fields-expression-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-strip-fields-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        for key, value in request.context["prompt_data"].items():
+          if isinstance(value, (str,)):
+            request.context["prompt_data"][key] = value.strip()
+        return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: create-name-from-parts-expression-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-create-name-from-parts-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        first_name = request.context["prompt_data"].pop("first_name")
+        last_name = request.context["prompt_data"].pop("last_name")
+        request.context["prompt_data"]["name"] = " ".join([first_name, last_name])
+        return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: copy-prompt-data-email-to-flow-plan-context-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-copy-prompt-data-email-to-flow-plan-context-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        # Doing this tells an email confirmation stage to send an email
+        # to the email in prompt_data rather than the current user configured email
+        prompt_data = request.context.get("prompt_data", {})
+        if "email" in prompt_data:
+          request.context["flow_plan"].context["email"] = prompt_data["email"]
+        return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: set-email-confirmed-attribute-to-false-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-set-email-confirmed-attribute-to-false-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        email_attributes = request.context \
+          .setdefault("prompt_data", {}) \
+          .setdefault("attributes", {}) \
+          .setdefault("abb", {}) \
+          .setdefault("email", {})
+
+        email_attributes["confirmed"] = False
+        return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: set-email-confirmed-attribute-to-true-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-set-email-confirmed-attribute-to-true-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        email_attributes = request.context \
+          .setdefault("prompt_data", {}) \
+          .setdefault("attributes", {}) \
+          .setdefault("abb", {}) \
+          .setdefault("email", {})
+
+        email_attributes["confirmed"] = True
+        return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: email-confirmed-attribute-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-email-confirmed-attribute-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        if request.user.is_anonymous:
+          return False
+
+        confirmed = request.user.attributes \
+          .get("abb", {}) \
+          .get("email", {}) \
+          .get("confirmed", False)
+
+        return bool(confirmed)
+  - model: authentik_policies_expression.expressionpolicy
+    id: email-changed-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-email-changed-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        if request.user.is_anonymous:
+          return False
+
+        prompt_data = request.context.get("prompt_data", {})
+        if "email" in prompt_data and prompt_data["email"] != request.user.email:
+          return True
+
+        return False
+  - model: authentik_policies_expression.expressionpolicy
+    id: user-settings-autorization-expression-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-user-settings-autorization-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        from authentik.core.models import (
+            USER_ATTRIBUTE_CHANGE_EMAIL,
+            USER_ATTRIBUTE_CHANGE_NAME,
+            USER_ATTRIBUTE_CHANGE_USERNAME
+        )
+        prompt_data = request.context.get("prompt_data")
+
+        if not request.user.group_attributes(request.http_request).get(
+            USER_ATTRIBUTE_CHANGE_EMAIL, request.http_request.tenant.default_user_change_email
+        ):
+            if "email" in prompt_data and prompt_data["email"] != request.user.email:
+                ak_message("Not allowed to change email address.")
+                return False
+
+        if not request.user.group_attributes(request.http_request).get(
+            USER_ATTRIBUTE_CHANGE_NAME, request.http_request.tenant.default_user_change_name
+        ):
+            if "name" in prompt_data and prompt_data["name"] != request.user.name:
+                ak_message("Not allowed to change name.")
+                return False
+
+        if not request.user.group_attributes(request.http_request).get(
+            USER_ATTRIBUTE_CHANGE_USERNAME, request.http_request.tenant.default_user_change_username
+        ):
+            if "username" in prompt_data and prompt_data["username"] != request.user.username:
+                ak_message("Not allowed to change username.")
+                return False
+
+        return True
+  - model: authentik_policies_event_matcher.eventmatcherpolicy
+    id: configuration-error-event-matcher-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Condition [OR,
+                                        !Context notifications.configuration_error.transports.email,
+                                        !Context notifications.configuration_error.transports.ui]],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-configuration-error-event-matcher-policy", !Context global.namespace]
+    attrs:
+      action: configuration_error
+  - model: authentik_policies_password.passwordpolicy
+    id: password-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-password-policy", !Context global.namespace]
+    attrs:
+      password_field: password
+      check_have_i_been_pwned: !Context global.passwords.prevent_compromised_passwords
+      check_zxcvbn: !Context global.passwords.prevent_weak_passwords
+      check_static_rules: true
+      amount_lowercase: !If [!Context global.passwords.require_lowercase, 1, 0]
+      amount_uppercase: !If [!Context global.passwords.require_uppercase, 1, 0]
+      amount_digits: !If [!Context global.passwords.require_digit, 1, 0]
+      amount_symbols: !If [!Context global.passwords.require_special_character, 1, 0]
+      length_min: !Context global.passwords.min_length
+      error_message: !Format ["Password must be at least %s characters long%s%s%s%s%s%s%s%s.",
+                              !Context global.passwords.min_length,
+                              !If [!Condition [OR,
+                                               !Context global.passwords.require_lowercase,
+                                               !Context global.passwords.require_uppercase,
+                                               !Context global.passwords.require_digit,
+                                               !Context global.passwords.require_special_character],
+                                  " and must contain ",
+                                  ""],
+                              !If [!Context global.passwords.require_lowercase,
+                                   "a lowercase letter",
+                                   ""],
+                              !If [!Condition [AND,
+                                               !Context global.passwords.require_lowercase,
+                                               !Context global.passwords.require_uppercase],
+                                   !If [!Condition [OR,
+                                                    !Context global.passwords.require_digit,
+                                                    !Context global.passwords.require_special_character],
+                                        ", ",
+                                        " and "],
+                                   ""],
+                              !If [!Context global.passwords.require_uppercase,
+                                   "an uppercase letter",
+                                   ""],
+                              !If [!Condition [AND,
+                                               !Condition [OR,
+                                                           !Context global.passwords.require_lowercase,
+                                                           !Context global.passwords.require_uppercase],
+                                               !Context global.passwords.require_digit],
+                                   !If [!Context global.passwords.require_special_character,
+                                        ", ",
+                                        " and "],
+                                   ""],
+                              !If [!Context global.passwords.require_digit,
+                                   "a digit",
+                                   ""],
+                              !If [!Condition [AND,
+                                               !Condition [OR,
+                                                           !Context global.passwords.require_lowercase,
+                                                           !Context global.passwords.require_uppercase,
+                                                           !Context global.passwords.require_digit],
+                                               !Context global.passwords.require_special_character],
+                                   " and ",
+                                   ""],
+                              !If [!Context global.passwords.require_special_character,
+                                   "a special character",
+                                   ""]]
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification Transports ~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_events.notificationtransport
+    id: global-email-notification-transport
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Condition [OR,
+                                        !Context notifications.configuration_error.transports.email]],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-global-email-notification-transport", !Context global.namespace]
+    attrs:
+      mode: email
+  - model: authentik_events.notificationtransport
+    id: global-ui-notification-transport
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Condition [OR,
+                                        !Context notifications.configuration_error.transports.ui]],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-global-ui-notification-transport", !Context global.namespace]
+    attrs:
+      mode: local
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Notification Rules ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_events.notificationrule
+    id: global-notify-on-configuration-error-rule
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Condition [OR,
+                                        !Context notifications.configuration_error.transports.email,
+                                        !Context notifications.configuration_error.transports.ui]],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-global-notify-on-configuration-error-rule", !Context global.namespace]
+    attrs:
+      severity: !Context notifications.configuration_error.severity
+      destination_group: !Find [authentik_core.group,
+                                [name, !Context notifications.configuration_error.notification_group]]
+      transports:
+        - !If [!Condition [AND,
+                           !Condition [NOR, !Context global.uninstall],
+                           !Context notifications.configuration_error.transports.email],
+                !KeyOf global-email-notification-transport,
+                null]
+        - !If [!Condition [AND,
+                           !Condition [NOR, !Context global.uninstall],
+                           !Context notifications.configuration_error.transports.ui],
+                !KeyOf global-ui-notification-transport,
+                null]
+#~~~~~~~~~~~~~~~~~~~~~~~~~ Notification Rule Bindings ~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_policies.policybinding
+    id: global-notify-on-configuration-error-rule-policy-binding-10
+    conditions:
+      # Deleting the rule binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Condition [OR,
+                                !Context notifications.configuration_error.transports.email,
+                                !Context notifications.configuration_error.transports.ui]]
+    identifiers:
+      target: !KeyOf global-notify-on-configuration-error-rule
+      policy: !KeyOf configuration-error-event-matcher-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 10
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Flows ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_flows.flow
+    id: password-change-flow
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      slug: !Format ["abb-%s-password-change-flow", !Context global.namespace]
+    attrs:
+      name: !Context password_change.name
+      title: !Context password_change.title
+      authentication: require_authenticated
+      denied_action: continue
+      designation: stage_configuration
+  - model: authentik_flows.flow
+    id: authentication-flow
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      slug: !Format ["abb-%s-authentication-flow", !Context global.namespace]
+    attrs:
+      name: !Context authentication.name
+      title: !Context authentication.title
+      authentication: require_unauthenticated
+      denied_action: continue
+      designation: authentication
+  - model: authentik_flows.flow
+    id: invalidation-flow
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      slug: !Format ["abb-%s-invalidation-flow", !Context global.namespace]
+    attrs:
+      name: !Context invalidation.name
+      title: !Context invalidation.title
+      authentication: require_authenticated
+      denied_action: continue
+      designation: invalidation
+  - model: authentik_flows.flow
+    id: enrollment-flow
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled],
+                present,
+                absent]
+    identifiers:
+      slug: !Format ["abb-%s-enrollment-flow", !Context global.namespace]
+    attrs:
+      name: !Context enrollment.name
+      title: !Context enrollment.title
+      authentication: require_unauthenticated
+      denied_action: continue
+      designation: enrollment
+  - model: authentik_flows.flow
+    id: recovery-flow
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context recovery.enabled],
+                present,
+                absent]
+    identifiers:
+      slug: !Format ["abb-%s-recovery-flow", !Context global.namespace]
+    attrs:
+      name: !Context recovery.name
+      title: !Context recovery.title
+      authentication: require_unauthenticated
+      denied_action: continue
+      designation: recovery
+  - model: authentik_flows.flow
+    id: user-settings-flow
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      slug: !Format ["abb-%s-user-settings-flow", !Context global.namespace]
+    attrs:
+      name: !Context user_settings.name
+      title: !Context user_settings.title
+      authentication: require_authenticated
+      denied_action: continue
+      designation: stage_configuration
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_stages_password.passwordstage
+    id: password-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-password-stage", !Context global.namespace]
+    attrs:
+      backends: !Context authentication.backends
+      # TODO: https://github.com/goauthentik/authentik/issues/20309
+      configure_flow: !If [!Context global.uninstall,
+                           null,
+                           # If deleting - do not use !KeyOf as it would not
+                           # find a primary key and it will error out
+                           !KeyOf password-change-flow]
+  - model: authentik_stages_identification.identificationstage
+    id: identification-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-identification-stage", !Context global.namespace]
+    attrs:
+      user_fields: !Context authentication.user_fields
+      show_matched_user: !Context authentication.show_matched_user
+      # TODO: https://github.com/goauthentik/authentik/issues/20309
+      password_stage: !If [!Condition [NOR,
+                                       !Context global.uninstall,
+                                       !Context authentication.show_password_on_separate_stage],
+                           !KeyOf password-stage,
+                           null]
+      enrollment_flow: !If [!Condition [AND,
+                                       !Condition [NOR, !Context global.uninstall],
+                                       !Context enrollment.enabled],
+                           !KeyOf enrollment-flow,
+                           null]
+      # TODO
+      # recovery_flow: !Find [authentik_flows.flow, [slug, !Context recovery_flow_slug]]
+  - model: authentik_stages_user_login.userloginstage
+    id: user-login-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-user-login-stage", !Context global.namespace]
+    attrs:
+      session_duration: !Context authentication.session_duration
+  - model: authentik_stages_user_logout.userlogoutstage
+    id: user-logout-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-user-logout-stage", !Context global.namespace]
+  - model: authentik_stages_user_write.userwritestage
+    id: existing-user-write-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-existing-user-write-stage", !Context global.namespace]
+    attrs:
+      user_creation_mode: never_create
+  - model: authentik_stages_prompt.promptstage
+    id: password-and-password-repeat-prompt-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-password-and-password-repeat-prompt-stage", !Context global.namespace]
+    attrs:
+      fields:
+        # Authentik will take care validating the two password fields match
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Context global.uninstall, null, !KeyOf password-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf password-repeat-prompt]
+      validation_policies:
+        - !If [!Context global.uninstall, null, !KeyOf password-policy]
+  - model: authentik_stages_prompt.promptstage
+    id: logout-confirmation-prompt-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context invalidation.require_confirmation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-logout-confirmation-prompt-stage", !Context global.namespace]
+    attrs:
+      fields:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context invalidation.require_confirmation],
+                !KeyOf logout-confirmation-prompt,
+                null]
+  - model: authentik_stages_invitation.invitationstage
+    id: mandatory-invitation-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled,
+                            !Context enrollment.require_invitation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-mandatory-invitation-stage", !Context global.namespace]
+    attrs:
+      continue_flow_without_invitation: false
+  - model: authentik_stages_invitation.invitationstage
+    id: optional-invitation-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled,
+                            !Context enrollment.require_invitation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-optional-invitation-stage", !Context global.namespace]
+    attrs:
+      continue_flow_without_invitation: true
+  - model: authentik_stages_email.emailstage
+    id: email-confirmation-email-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-email-confirmation-email-stage", !Context global.namespace]
+    attrs:
+      subject: !Context global.email.confirmation.subject
+      token_expiry: !Context global.email.token_expiration
+      template: email/account_confirmation.html
+      activate_user_on_success: false
+      use_global_settings: true
+  - model: authentik_stages_email.emailstage
+    id: recovery-email-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context recovery.enabled],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-recovery-email-stage", !Context global.namespace]
+    attrs:
+      subject: !Context recovery.email.subject
+      token_expiry: !Context global.email.token_expiration
+      template: email/password_reset.html
+      activate_user_on_success: false
+      use_global_settings: true
+  - model: authentik_stages_prompt.promptstage
+    id: invitation-token-prompt-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled,
+                            !Context enrollment.require_invitation],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-invitation-token-prompt-stage", !Context global.namespace]
+    attrs:
+      fields:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Condition [AND,
+                          !Condition [NOR, !Context global.uninstall],
+                          !Context enrollment.enabled,
+                          !Context enrollment.require_invitation],
+               !KeyOf invitation-token-prompt,
+               null]
+      validation_policies:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Condition [AND,
+                          !Condition [NOR, !Context global.uninstall],
+                          !Context enrollment.enabled,
+                          !Context enrollment.require_invitation],
+               !KeyOf valid-invitation-token-prompt-expression-policy,
+               null]
+  - model: authentik_stages_prompt.promptstage
+    id: enrollment-user-info-prompt-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-enrollment-user-info-prompt-stage", !Context global.namespace]
+    attrs:
+      fields:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Context global.uninstall, null, !KeyOf email-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf username-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf first-name-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf last-name-prompt]
+      validation_policies:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Context global.uninstall, null, !KeyOf strip-fields-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf unique-email-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf valid-name-parts-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf valid-username-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf create-name-from-parts-expression-policy]
+  - model: authentik_stages_prompt.promptstage
+    id: user-settings-user-info-prompt-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-user-settings-user-info-prompt-stage", !Context global.namespace]
+    attrs:
+      fields:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Context global.uninstall, null, !KeyOf email-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf username-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf first-name-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf last-name-prompt]
+        - !If [!Context global.uninstall, null, !KeyOf locale-prompt]
+      validation_policies:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Context global.uninstall, null, !KeyOf strip-fields-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf unique-email-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf valid-name-parts-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf valid-username-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf create-name-from-parts-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf user-settings-autorization-expression-policy]
+  - model: authentik_stages_prompt.promptstage
+    id: change-or-verify-email-prompt-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-change-or-verify-email-prompt-stage", !Context global.namespace]
+    attrs:
+      fields:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Context global.uninstall, null, !KeyOf email-prompt]
+      validation_policies:
+        # TODO: https://github.com/goauthentik/authentik/issues/20309
+        # If deleting - do not use !KeyOf as it would not
+        # find a primary key and it will error out
+        - !If [!Context global.uninstall, null, !KeyOf strip-fields-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf unique-email-expression-policy]
+        - !If [!Context global.uninstall, null, !KeyOf user-settings-autorization-expression-policy]
+  - model: authentik_stages_user_write.userwritestage
+    id: enrollment-user-write-stage
+    state: !If [!Condition [AND,
+                           !Condition [NOR, !Context global.uninstall],
+                           !Context enrollment.enabled],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-enrollment-user-write-stage", !Context global.namespace]
+    attrs:
+      user_creation_mode: always_create
+      create_users_as_inactive: !Context enrollment.create_users_as_inactive
+      user_type: !If [!Context enrollment.create_users_as_external, external, internal]
+#~~~~~~~~~~~~~~~~~~~~~~~~ User Settings Flow Bindings ~~~~~~~~~~~~~~~~~~~~~~~~~#
+  # TODO: This flow is broken due to a bug
+  # See: https://github.com/goauthentik/authentik/issues/20455
+  - model: authentik_flows.flowstagebinding
+    id: user-settings-user-settings-user-info-prompt-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf user-settings-flow
+      stage: !KeyOf user-settings-user-info-prompt-stage
+    attrs:
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    id: user-settings-email-confirmation-email-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context global.email.require_confirmation_when_changed, present, absent]
+    identifiers:
+      target: !KeyOf user-settings-flow
+      stage: !KeyOf email-confirmation-email-stage
+    attrs:
+      order: 20
+      re_evaluate_policies: true
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    id: user-settings-email-confirmation-email-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf user-settings-email-confirmation-email-stage-binding
+      policy: !KeyOf email-changed-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 10
+  - model: authentik_policies.policybinding
+    id: user-settings-email-confirmation-email-stage-policy-binding-20
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf user-settings-email-confirmation-email-stage-binding
+      policy: !KeyOf copy-prompt-data-email-to-flow-plan-context-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 20
+  - model: authentik_flows.flowstagebinding
+    id: user-settings-user-info-existing-user-write-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf user-settings-flow
+      stage: !KeyOf existing-user-write-stage
+    attrs:
+      order: 100
+#~~~~~~~~~~~~~~~~~~~~~~~~ Enrollment Flow Bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_flows.flowstagebinding
+    id: optional-invitation-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context enrollment.require_invitation, present, absent]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf optional-invitation-stage
+    attrs:
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    id: invitation-token-prompt-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context enrollment.require_invitation, present, absent]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf invitation-token-prompt-stage
+    attrs:
+      order: 20
+      re_evaluate_policies: true
+      policy_engine_mode: all
+  # Normalise the location of the invitation token
+  - model: authentik_policies.policybinding
+    id: invitation-token-prompt-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled,
+                    !Context enrollment.require_invitation]
+    identifiers:
+      target: !KeyOf invitation-token-prompt-stage-binding
+      policy: !KeyOf missing-invitation-token-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    id: mandatory-invitation-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context enrollment.require_invitation, present, absent]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf mandatory-invitation-stage
+    attrs:
+      order: 30
+  - model: authentik_flows.flowstagebinding
+    id: enrollment-enrollment-user-info-prompt-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf enrollment-user-info-prompt-stage
+    attrs:
+      order: 40
+  - model: authentik_flows.flowstagebinding
+    id: enrollment-password-and-password-repeat-prompt-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf password-and-password-repeat-prompt-stage
+    attrs:
+      order: 50
+  - model: authentik_flows.flowstagebinding
+    id: enrollment-enrollment-user-write-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf enrollment-user-write-stage
+    attrs:
+      order: 100
+  - model: authentik_policies.policybinding
+    id: enrollment-enrollment-user-write-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled,
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf enrollment-enrollment-user-write-stage-binding
+      policy: !KeyOf set-email-confirmed-attribute-to-false-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    id: enrollment-email-confirmation-email-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context global.email.require_confirmation_when_changed, present, absent]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf email-confirmation-email-stage
+    attrs:
+      order: 110
+  - model: authentik_policies.policybinding
+    id: enrollment-email-confirmation-email-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled,
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf enrollment-email-confirmation-email-stage-binding
+      policy: !KeyOf copy-prompt-data-email-to-flow-plan-context-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    id: enrollment-existing-user-write-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context global.email.require_confirmation_when_changed, present, absent]
+    identifiers:
+      target: !KeyOf enrollment-flow
+      stage: !KeyOf existing-user-write-stage
+    attrs:
+      order: 120
+  - model: authentik_policies.policybinding
+    id: enrollment-existing-user-write-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled,
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf enrollment-existing-user-write-stage-binding
+      policy: !KeyOf set-email-confirmed-attribute-to-true-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 10
+#~~~~~~~~~~~~~~~~~~~~~~~~~ Recovery Flow Bindings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context recovery.enabled]
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf identification-stage
+    attrs:
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context recovery.enabled]
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf recovery-email-stage
+    attrs:
+      order: 20
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context recovery.enabled]
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf password-and-password-repeat-prompt-stage
+    attrs:
+      order: 30
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context recovery.enabled]
+    identifiers:
+      target: !KeyOf recovery-flow
+      stage: !KeyOf existing-user-write-stage
+    attrs:
+      order: 100
+#~~~~~~~~~~~~~~~~~~~ Password Change Flow Stage Bindings ~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context password_change.validate_current_password, present, absent]
+    identifiers:
+      target: !KeyOf password-change-flow
+      stage: !KeyOf password-stage
+    attrs:
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf password-change-flow
+      stage: !KeyOf password-and-password-repeat-prompt-stage
+    attrs:
+      order: 20
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf password-change-flow
+      stage: !KeyOf existing-user-write-stage
+    attrs:
+      order: 100
+#~~~~~~~~~~~~~~~~~~~~~ Authentication Flow Stage Bindings ~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf authentication-flow
+      stage: !KeyOf identification-stage
+    attrs:
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context authentication.show_password_on_separate_stage, present, absent]
+    identifiers:
+      target: !KeyOf authentication-flow
+      stage: !KeyOf password-stage
+    attrs:
+      order: 20
+  - model: authentik_flows.flowstagebinding
+    id: authentication-change-or-verify-email-prompt-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context global.email.require_confirmation_when_changed, present, absent]
+    identifiers:
+      target: !KeyOf authentication-flow
+      stage: !KeyOf change-or-verify-email-prompt-stage
+    attrs:
+      order: 30
+      re_evaluate_policies: true
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    id: authentication-change-or-verify-email-prompt-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf authentication-change-or-verify-email-prompt-stage-binding
+      policy: !KeyOf email-confirmed-attribute-expression-policy
+    attrs:
+      enabled: true
+      negate: true
+      timeout: 30
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    id: authentication-email-confirmation-email-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context global.email.require_confirmation_when_changed, present, absent]
+    identifiers:
+      target: !KeyOf authentication-flow
+      stage: !KeyOf email-confirmation-email-stage
+    attrs:
+      order: 40
+      re_evaluate_policies: true
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    id: authentication-email-confirmation-email-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf authentication-email-confirmation-email-stage-binding
+      policy: !KeyOf email-confirmed-attribute-expression-policy
+    attrs:
+      enabled: true
+      negate: true
+      timeout: 30
+      order: 10
+  - model: authentik_policies.policybinding
+    id: authentication-email-confirmation-email-stage-policy-binding-20
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf authentication-email-confirmation-email-stage-binding
+      policy: !KeyOf copy-prompt-data-email-to-flow-plan-context-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 20
+  - model: authentik_flows.flowstagebinding
+    id: authentication-existing-user-write-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context global.email.require_confirmation_when_changed, present, absent]
+    identifiers:
+      target: !KeyOf authentication-flow
+      stage: !KeyOf existing-user-write-stage
+    attrs:
+      order: 50
+      re_evaluate_policies: true
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    id: authentication-existing-user-write-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf authentication-existing-user-write-stage-binding
+      policy: !KeyOf email-confirmed-attribute-expression-policy
+    attrs:
+      enabled: true
+      negate: true
+      timeout: 30
+      order: 10
+  - model: authentik_policies.policybinding
+    id: authentication-existing-user-write-stage-policy-binding-20
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf authentication-existing-user-write-stage-binding
+      policy: !KeyOf set-email-confirmed-attribute-to-true-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 20
+  # TODO: 2FA stage
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf authentication-flow
+      stage: !KeyOf user-login-stage
+    attrs:
+      order: 100
+#~~~~~~~~~~~~~~~~~~~~ Invalidation Flow Stage Bindings ~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context invalidation.require_confirmation, present, absent]
+    identifiers:
+      target: !KeyOf invalidation-flow
+      stage: !KeyOf logout-confirmation-prompt-stage
+    attrs:
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf invalidation-flow
+      stage: !KeyOf user-logout-stage
+    attrs:
+      order: 100
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Brand ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_brands.brand
+    id: brand
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      domain: !Context global.domain
+    attrs:
+      default: !Context global.default
+      branding_title: !Context global.title
+      flow_authentication: !If [!Context global.uninstall, null, !KeyOf authentication-flow]
+      flow_invalidation: !If [!Context global.uninstall, null, !KeyOf invalidation-flow]
+      flow_user_settings: !If [!Context global.uninstall, null, !KeyOf user-settings-flow]
+      flow_recovery: !If [!Condition [AND,
+                                       !Condition [NOR, !Context global.uninstall],
+                                       !Context recovery.enabled],
+                           !KeyOf recovery-flow,
+                           null]
