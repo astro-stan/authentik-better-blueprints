@@ -235,6 +235,16 @@ entries:
       order: 0
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   - model: authentik_policies_expression.expressionpolicy
+    id: is-superuser-expression-policy
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-is-superuser-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        if request.user.is_anonymous:
+          return False
+        return request.user.is_superuser
+  - model: authentik_policies_expression.expressionpolicy
     id: missing-invitation-token-expression-policy
     state: !If [!Condition [AND,
                             !Condition [NOR, !Context global.uninstall],
@@ -704,6 +714,17 @@ entries:
       authentication: require_authenticated
       denied_action: continue
       designation: stage_configuration
+  - model: authentik_flows.flow
+    id: implicit-consent-flow
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      slug: !Format ["abb-%s-implicit-consent-flow", !Context global.namespace]
+    attrs:
+      name: Authorize Application
+      title: Redirecting to %(app)s
+      authentication: require_authenticated
+      designation: authorization
+      denied_action: continue
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Stages ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   - model: authentik_stages_password.passwordstage
     id: password-stage
