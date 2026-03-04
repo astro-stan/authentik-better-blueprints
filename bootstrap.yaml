@@ -233,6 +233,56 @@ entries:
       initial_value_expression: false
       required: true
       order: 0
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Property Mappings ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_providers_oauth2.scopemapping
+    id: email-oauth-mapping
+    state: !If [!Context global.uninstall, absent, present]
+    conditions:
+      - !Context global.email.require_confirmation_when_changed
+    identifiers:
+      name: !Format ["abb-%s-email-oauth-mapping", !Context global.namespace]
+    attrs:
+      scope_name: email
+      description: "ABB - Email address"
+      expression: |
+        attributes = request.user.attributes
+        return {
+          "email": request.user.email,
+          "email_verified": attributes.get("abb", {}).get("email", {}).get("confirmed", False)
+        }
+  - model: authentik_providers_oauth2.scopemapping
+    id: email-oauth-mapping
+    state: !If [!Context global.uninstall, absent, present]
+    conditions:
+      - !Condition [NOR, !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      name: !Format ["abb-%s-email-oauth-mapping", !Context global.namespace]
+    attrs:
+      scope_name: email
+      description: "ABB - Email address"
+      expression: |
+        attributes = request.user.attributes
+        return {
+          "email": request.user.email,
+          # When email verification is turned off all emails are considered confirmed
+          "email_verified": True
+        }
+  - model: authentik_providers_oauth2.scopemapping
+    id: profile-oauth-mapping
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-profile-oauth-mapping", !Context global.namespace]
+    attrs:
+      scope_name: profile
+      description: "ABB - General Profile Information"
+      expression: |
+        return {
+          "name": request.user.name,
+          "given_name": user.name.split(" ")[0],
+          "preferred_username": request.user.username,
+          "nickname": request.user.username,
+          "groups": [group.name for group in request.user.groups.all()],
+        }
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Policies ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
   - model: authentik_policies_expression.expressionpolicy
     id: is-superuser-expression-policy
