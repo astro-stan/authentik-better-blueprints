@@ -491,6 +491,10 @@ entries:
         if request.user.is_anonymous:
           return False
 
+        # Service accounts are exempt from email confirmations
+        if request.user.type in ("service_account", "internal_service_account"):
+          return True
+
         confirmed = request.user.attributes \
           .get("abb", {}) \
           .get("email", {}) \
