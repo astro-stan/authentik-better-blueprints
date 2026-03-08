@@ -721,6 +721,17 @@ entries:
       denied_action: continue
       designation: authentication
   - model: authentik_flows.flow
+    id: ldap-authentication-flow
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      slug: !Format ["abb-%s-ldap-authentication-flow", !Context global.namespace]
+    attrs:
+      name: LDAP Authentication Flow
+      title: LDAP Authentication Flow
+      authentication: require_outpost
+      denied_action: continue
+      designation: authentication
+  - model: authentik_flows.flow
     id: invalidation-flow
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
@@ -797,6 +808,14 @@ entries:
                            # If deleting - do not use !KeyOf as it would not
                            # find a primary key and it will error out
                            !KeyOf password-change-flow]
+  - model: authentik_stages_password.passwordstage
+    id: app-password-stage
+    state: !If [!Context global.uninstall, absent, present]
+    identifiers:
+      name: !Format ["abb-%s-app-password-stage", !Context global.namespace]
+    attrs:
+      backends:
+        - authentik.core.auth.TokenBackend
   - model: authentik_stages_identification.identificationstage
     id: identification-stage
     state: !If [!Context global.uninstall, absent, present]
@@ -925,6 +944,17 @@ entries:
       template: email/password_reset.html
       activate_user_on_success: false
       use_global_settings: true
+  - model: authentik_stages_deny.denystage
+    id: unconfirmed-email-deny-stage
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context global.email.require_confirmation_when_changed],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-unconfirmed-email-deny-stage", !Context global.namespace]
+    attrs:
+      deny_message: Your email address has not been verified
   - model: authentik_stages_prompt.promptstage
     id: invitation-token-prompt-stage
     state: !If [!Condition [AND,
@@ -1500,6 +1530,64 @@ entries:
       - !Condition [NOR, !Context global.uninstall]
     identifiers:
       target: !KeyOf authentication-flow
+      stage: !KeyOf user-login-stage
+    attrs:
+      order: 100
+#~~~~~~~~~~~~~~~~~~ LDAP Authentication Flow Stage Bindings ~~~~~~~~~~~~~~~~~~~#
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf ldap-authentication-flow
+      stage: !KeyOf identification-stage
+    attrs:
+      order: 10
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf ldap-authentication-flow
+      stage: !KeyOf app-password-stage
+    attrs:
+      order: 20
+  - model: authentik_flows.flowstagebinding
+    id: authentication-unconfirmed-email-deny-stage-binding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    # TODO: https://github.com/goauthentik/authentik/issues/20456
+    state: !If [!Context global.email.require_confirmation_when_changed, present, absent]
+    identifiers:
+      target: !KeyOf ldap-authentication-flow
+      stage: !KeyOf unconfirmed-email-deny-stage
+    attrs:
+      order: 30
+      re_evaluate_policies: true
+      policy_engine_mode: all
+  - model: authentik_policies.policybinding
+    id: authentication-unconfirmed-email-deny-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context global.email.require_confirmation_when_changed]
+    identifiers:
+      target: !KeyOf authentication-unconfirmed-email-deny-stage-binding
+      policy: !KeyOf email-confirmed-attribute-expression-policy
+    attrs:
+      enabled: true
+      negate: true
+      timeout: 30
+      order: 10
+  # TODO: 2FA stage
+  - model: authentik_flows.flowstagebinding
+    conditions:
+      # Deleting the flow will also delete FlowStageBindings
+      - !Condition [NOR, !Context global.uninstall]
+    identifiers:
+      target: !KeyOf ldap-authentication-flow
       stage: !KeyOf user-login-stage
     attrs:
       order: 100
