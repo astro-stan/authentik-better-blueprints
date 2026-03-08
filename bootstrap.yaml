@@ -820,6 +820,9 @@ entries:
     attrs:
       backends:
         - authentik.core.auth.TokenBackend
+        # TODO: Add all backends from !Context authentication.backends when possible
+        # See https://github.com/goauthentik/authentik/pull/20785/
+        - authentik.core.auth.InbuiltBackend
   - model: authentik_stages_identification.identificationstage
     id: identification-stage
     state: !If [!Context global.uninstall, absent, present]
