@@ -53,6 +53,7 @@ context:
   enrollment.enabled: true
   enrollment.require_invitation: true
   enrollment.create_users_as_external: true
+  enrollment.add_users_to_group: null
   enrollment.create_users_as_inactive: false
   recovery.name: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
   recovery.title: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
@@ -1079,6 +1080,9 @@ entries:
       user_creation_mode: always_create
       create_users_as_inactive: !Context enrollment.create_users_as_inactive
       user_type: !If [!Context enrollment.create_users_as_external, external, internal]
+      create_users_group: !If [!Context enrollment.create_users_as_external,
+                               !Find [authentik_core.group, [name, !Context enrollment.create_users_as_external]],
+                               null]
 #~~~~~~~~~~~~~~~~~~~~~~~~ User Settings Flow Bindings ~~~~~~~~~~~~~~~~~~~~~~~~~#
   # TODO: This flow is broken due to a bug
   # See: https://github.com/goauthentik/authentik/issues/20455
