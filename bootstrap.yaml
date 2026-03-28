@@ -26,6 +26,9 @@ context:
   global.passwords.require_special_character: false
   global.passwords.prevent_weak_passwords: true
   global.passwords.prevent_compromised_passwords: true
+  global.user.can_change_email: true
+  global.user.can_change_username: true
+  global.user.can_change_name: true
   authentication.name: !Format ["Login to %s", !Context [global.domain, Authentik]]
   authentication.title: !Format ["Login to %s", !Context [global.domain, Authentik]]
   authentication.user_fields:
@@ -1636,3 +1639,7 @@ entries:
                                        !Context recovery.enabled],
                            !KeyOf recovery-flow,
                            null]
+      attributes:
+        goauthentik.io/user/can-change-email: !If [!Context global.user.can_change_email, true, false]
+        goauthentik.io/user/can-change-username: !If [!Context global.user.can_change_username, true, false]
+        goauthentik.io/user/can-change-name: !If [!Context global.user.can_change_name, true, false]
