@@ -1080,8 +1080,8 @@ entries:
       user_creation_mode: always_create
       create_users_as_inactive: !Context enrollment.create_users_as_inactive
       user_type: !If [!Context enrollment.create_users_as_external, external, internal]
-      create_users_group: !If [!Context enrollment.create_users_as_external,
-                               !Find [authentik_core.group, [name, !Context enrollment.create_users_as_external]],
+      create_users_group: !If [!Context enrollment.add_users_to_group,
+                               !Find [authentik_core.group, [name, !Context enrollment.add_users_to_group]],
                                null]
 #~~~~~~~~~~~~~~~~~~~~~~~~ User Settings Flow Bindings ~~~~~~~~~~~~~~~~~~~~~~~~~#
   # TODO: This flow is broken due to a bug
