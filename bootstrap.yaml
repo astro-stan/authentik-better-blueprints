@@ -44,6 +44,7 @@ context:
     - username
     # - upn
   authentication.show_matched_user: true
+  authentication.show_remember_me: false
   # Case-sensitiveness when matching usernames, emails, etc in identity stages.
   # NOTE: It is recommended to keep this setting synced with the
   # `global.username.case_sensitive_match` and `global.username.case_sensitive_match`.
@@ -877,6 +878,7 @@ entries:
     attrs:
       user_fields: !Context authentication.user_fields
       show_matched_user: !Context authentication.show_matched_user
+      enable_remember_me: !Context authentication.show_remember_me
       case_insensitive_matching: !Condition [NOR, !Context authentication.case_sensitive_match]
       # TODO: https://github.com/goauthentik/authentik/issues/20309
       password_stage: !If [!Condition [NOR,
