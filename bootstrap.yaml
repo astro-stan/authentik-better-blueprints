@@ -1689,6 +1689,9 @@ entries:
                            !KeyOf recovery-flow,
                            null]
       attributes:
+        warning: |
+          Please do not edit any of the settings defined here directly.
+          Edit the ABB Bootstrap blueprint context instead.
         goauthentik.io/user/can-change-email: !If [!Context global.user.can_change_email, true, false]
         goauthentik.io/user/can-change-username: !If [!Context global.user.can_change_username, true, false]
         goauthentik.io/user/can-change-name: !If [!Context global.user.can_change_name, true, false]
