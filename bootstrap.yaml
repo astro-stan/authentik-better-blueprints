@@ -50,6 +50,7 @@ context:
   # `global.username.case_sensitive_match` and `global.username.case_sensitive_match`.
   authentication.case_sensitive_match: !Condition [OR, !Context global.email.case_sensitive_match, !Context global.username.case_sensitive_match]
   authentication.show_password_on_separate_stage: true
+  authentication.allow_showing_password_when_typing: true
   authentication.backends:
     - authentik.core.auth.InbuiltBackend
     # - authentik.sources.ldap.auth.LDAPBackend
@@ -859,6 +860,7 @@ entries:
                            # If deleting - do not use !KeyOf as it would not
                            # find a primary key and it will error out
                            !KeyOf password-change-flow]
+      allow_show_password: !Context authentication.allow_showing_password_when_typing
   - model: authentik_stages_password.passwordstage
     id: app-password-stage
     state: !If [!Context global.uninstall, absent, present]
