@@ -19,14 +19,6 @@ context:
   global.email.require_confirmation_when_changed: true
   global.email.confirmation.subject: !Format ["%s - Confirm your email", !Context [global.domain, Authentik]]
   global.email.token_expiration: minutes=30
-  # Email case-sensitiveness is only applied at a brand level, not per user.
-  # NOTE: It is recommended to keep this setting set to `false` for best
-  # compatibility with other apps
-  global.email.case_sensitive_match: false
-  # Username case-sensitiveness is only applied at a brand level, not per user.
-  # NOTE: It is recommended to keep this setting set to `false` for best
-  # compatibility with other apps
-  global.username.case_sensitive_match: false
   global.passwords.min_length: 8
   global.passwords.require_lowercase: true
   global.passwords.require_uppercase: true
@@ -34,9 +26,16 @@ context:
   global.passwords.require_special_character: false
   global.passwords.prevent_weak_passwords: true
   global.passwords.prevent_compromised_passwords: true
+  # NOTE: User settings are applied at a brand level, not per user.
   global.user.can_change_email: true
   global.user.can_change_username: true
   global.user.can_change_name: true
+  # NOTE: It is recommended to keep this setting set to `false` for best
+  # compatibility with other apps
+  global.user.email.case_sensitive_match: false
+  # NOTE: It is recommended to keep this setting set to `false` for best
+  # compatibility with other apps
+  global.user.username.case_sensitive_match: false
   authentication.name: !Format ["Login to %s", !Context [global.domain, Authentik]]
   authentication.title: !Format ["Login to %s", !Context [global.domain, Authentik]]
   authentication.user_fields:
@@ -49,8 +48,8 @@ context:
   authentication.show_remember_me: false
   # Case-sensitiveness when matching usernames, emails, etc in identity stages.
   # NOTE: It is recommended to keep this setting synced with the
-  # `global.username.case_sensitive_match` and `global.username.case_sensitive_match`.
-  authentication.case_sensitive_match: !Condition [OR, !Context global.email.case_sensitive_match, !Context global.username.case_sensitive_match]
+  # `global.user.email.case_sensitive_match` and `global.user.username.case_sensitive_match`.
+  authentication.case_sensitive_match: !Condition [OR, !Context global.user.email.case_sensitive_match, !Context global.user.username.case_sensitive_match]
   authentication.show_password_on_separate_stage: true
   authentication.allow_showing_password_when_typing: true
   authentication.backends:
@@ -1704,6 +1703,6 @@ entries:
         goauthentik.io/user/can-change-name: !If [!Context global.user.can_change_name, true, false]
         abb:
           email:
-            case_sensitive_match: !If [!Context global.email.case_sensitive_match, true, false]
+            case_sensitive_match: !If [!Context global.user.email.case_sensitive_match, true, false]
           username:
-            case_sensitive_match: !If [!Context global.username.case_sensitive_match, true, false]
+            case_sensitive_match: !If [!Context global.user.username.case_sensitive_match, true, false]
