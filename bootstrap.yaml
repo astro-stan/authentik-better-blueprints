@@ -94,13 +94,13 @@ entries:
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
       name: !Format ["abb-%s-username-prompt", !Context global.namespace]
+    attrs:
       # Type is `text`, because `username` type checks for case-sensitive matches,
       # which may be undesired.
       # The uniqueness validation is handled by the `unique-username-expression-policy`,
       # similar to how it is done for the email prompt.
       # See https://github.com/goauthentik/authentik/issues/5844 for more context
       type: text
-    attrs:
       field_key: username
       label: Username
       placeholder: Username
@@ -117,8 +117,8 @@ entries:
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
       name: !Format ["abb-%s-email-prompt", !Context global.namespace]
-      type: email
     attrs:
+      type: email
       field_key: email
       label: Email
       placeholder: Email
@@ -135,8 +135,8 @@ entries:
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
       name: !Format ["abb-%s-first-name-prompt", !Context global.namespace]
-      type: text
     attrs:
+      type: text
       field_key: first_name
       label: First name
       placeholder: First name
@@ -153,8 +153,8 @@ entries:
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
       name: !Format ["abb-%s-last-name-prompt", !Context global.namespace]
-      type: text
     attrs:
+      type: text
       field_key: last_name
       label: Last name
       placeholder: Last name
@@ -171,8 +171,8 @@ entries:
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
       name: !Format ["abb-%s-locale-prompt", !Context global.namespace]
-      type: ak-locale
     attrs:
+      type: ak-locale
       field_key: attributes.settings.locale
       label: Locale
       placeholder: Locale
@@ -189,8 +189,8 @@ entries:
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
       name: !Format ["abb-%s-password-prompt", !Context global.namespace]
-      type: password
     attrs:
+      type: password
       field_key: password
       label: Password
       placeholder: Password
@@ -204,8 +204,8 @@ entries:
     state: !If [!Context global.uninstall, absent, present]
     identifiers:
       name: !Format ["abb-%s-password-repeat-prompt", !Context global.namespace]
-      type: password
     attrs:
+      type: password
       field_key: password_repeat
       label: Password (repeat)
       placeholder: Password (repeat)
@@ -223,8 +223,8 @@ entries:
                 absent]
     identifiers:
       name: !Format ["abb-%s-logout-confirmation-prompt", !Context global.namespace]
-      type: static
     attrs:
+      type: static
       field_key: logout_confirmation
       label: "Are you sure you want to log out?"
       placeholder_value: ""
@@ -243,8 +243,8 @@ entries:
                 absent]
     identifiers:
       name: !Format ["abb-%s-invitation-token-prompt", !Context global.namespace]
-      type: text
     attrs:
+      type: text
       # Must be named `token` for the invitation stage to pick it up
       field_key: token
       label: Invitaiton ID
