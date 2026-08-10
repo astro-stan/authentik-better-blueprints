@@ -1311,6 +1311,25 @@ entries:
       stage: !KeyOf mandatory-invitation-stage
     attrs:
       order: 30
+      re_evaluate_policies: true
+      policy_engine_mode: all
+  # Normalise the location of the invitation token
+  - model: authentik_policies.policybinding
+    id: mandatory-invitation-stage-policy-binding-10
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled,
+                    !Context enrollment.require_invitation]
+    identifiers:
+      target: !KeyOf mandatory-invitation-stage-binding
+      policy: !KeyOf missing-invitation-token-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 10
   - model: authentik_flows.flowstagebinding
     id: enrollment-enrollment-user-info-prompt-stage-binding
     conditions:
