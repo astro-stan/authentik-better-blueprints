@@ -69,7 +69,7 @@ context:
   enrollment.require_invitation: true
   enrollment.create_users_as_external: true
   enrollment.create_users_as_inactive: false
-  enrollment.default_user_group: Users
+  enrollment.default_user_group: null
   # If true allows setting extra existing groups to newly created users by
   # setting the `abb.user.extra_groups` list in the invitation custom attributes
   # or the enrollment plan context's prompt data
