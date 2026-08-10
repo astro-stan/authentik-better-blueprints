@@ -70,6 +70,10 @@ context:
   enrollment.create_users_as_external: true
   enrollment.create_users_as_inactive: false
   enrollment.default_user_group: Users
+  # If true allows setting extra existing groups to newly created users by
+  # setting the `abb.user.extra_groups` list in the invitation custom attributes
+  # or the enrollment plan context's prompt data
+  enrollment.allow_extra_groups_assigment: false
   recovery.name: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
   recovery.title: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
   recovery.email.subject: !Format ["Recover your %s account", !Context [global.domain, Authentik]]
@@ -525,6 +529,50 @@ entries:
           .setdefault("email", {})
 
         email_attributes["confirmed"] = True
+        return True
+  - model: authentik_policies_expression.expressionpolicy
+    id: assign-extra-user-groups-on-entrollment-expression-policy
+    state: !If [!Condition [AND,
+                            !Condition [NOR, !Context global.uninstall],
+                            !Context enrollment.enabled,
+                            !Context enrollment.allow_extra_groups_assigment],
+                present,
+                absent]
+    identifiers:
+      name: !Format ["abb-%s-assign-extra-user-groups-on-entrollment-expression-policy", !Context global.namespace]
+    attrs:
+      expression: |
+        from authentik.core.models import Group
+
+        if not request.user.is_anonymous:
+          ak_logger.error("Policy executed from a logged in user", user=request.user)
+          return False
+
+        flow_plan = request.context.get("flow_plan")
+        if not flow_plan:
+          ak_logger.error("Missing execution flow_plan in policy context")
+          return False
+
+        groups = flow_plan.context.setdefault("groups", [])
+
+        extra_group_names = flow_plan.context \
+          .setdefault("prompt_data", {}) \
+          .setdefault("abb", {}) \
+          .setdefault("user", {}) \
+          .setdefault("extra_groups", [])
+
+        for group_name in extra_group_names:
+          try:
+            group = Group.objects.get(name=group_name)
+            if group not in groups:
+              groups.append(group)
+              ak_logger.info("Added new user to group", group_name=group_name)
+            else:
+              ak_logger.info("New user already queued for addition to group. Skipping", group_name=group_name)
+          except Exception:
+            ak_logger.exception("Failed to add new user to group", group_name=group_name)
+
+        request.context["flow_plan"].context["groups"] = groups
         return True
   - model: authentik_policies_expression.expressionpolicy
     id: email-confirmed-attribute-expression-policy
@@ -1315,6 +1363,22 @@ entries:
       negate: false
       timeout: 30
       order: 10
+  - model: authentik_policies.policybinding
+    id: enrollment-enrollment-user-write-stage-policy-binding-20
+    conditions:
+      # Deleting the stage binding will also delete PolicyBindings
+      - !Condition [AND,
+                    !Condition [NOR, !Context global.uninstall],
+                    !Context enrollment.enabled,
+                    !Context enrollment.allow_extra_groups_assigment]
+    identifiers:
+      target: !KeyOf enrollment-enrollment-user-write-stage-binding
+      policy: !KeyOf assign-extra-user-groups-on-entrollment-expression-policy
+    attrs:
+      enabled: true
+      negate: false
+      timeout: 30
+      order: 20
   - model: authentik_flows.flowstagebinding
     id: enrollment-email-confirmation-email-stage-binding
     conditions:
